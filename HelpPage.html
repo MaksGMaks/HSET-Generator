@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="doc-title">Generator Help & Manual</title>
+    <style>
+        :root {
+            --bg: #121212;
+            --surface: #1e1e1e;
+            --border: #333;
+            --text: #e0e0e0;
+            --primary: #007acc;
+            --secondary: #2d2d2d;
+            --accent-bg: #252525;
+            --highlight: #4fc3f7;
+            --warning: #ffd54f;
+        }
+
+        [data-theme="light"] {
+            --bg: #ffffff;
+            --surface: #f9f9f9;
+            --border: #e0e0e0;
+            --text: #2c3e50;
+            --primary: #005fb8;
+            --secondary: #f0f0f0;
+            --accent-bg: #f8f9fa;
+            --highlight: #007acc;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            display: flex;
+        }
+
+        nav {
+            width: 280px;
+            height: 100vh;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            padding: 2rem 1rem;
+            overflow-y: auto;
+        }
+
+        .nav-header {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .lang-switcher {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 2rem;
+            padding: 5px;
+            background: var(--bg);
+            border-radius: 8px;
+        }
+
+        .lang-btn {
+            flex: 1;
+            padding: 5px;
+            font-size: 11px;
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .lang-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        nav a {
+            display: block;
+            color: var(--text);
+            text-decoration: none;
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+            transition: 0.2s;
+        }
+
+        nav a:hover { background: var(--secondary); color: var(--highlight); }
+
+        main { margin-left: 280px; padding: 3rem 10%; max-width: 900px; }
+
+        h1 { font-size: 2.5rem; margin-bottom: 2rem; border-bottom: 2px solid var(--primary); padding-bottom: 1rem; }
+        h2 { font-size: 1.5rem; margin-top: 2.5rem; color: var(--highlight); }
+        
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin: 1rem 0; }
+
+        .note { border-left: 4px solid var(--warning); background: rgba(255, 213, 79, 0.1); padding: 1rem; border-radius: 0 8px 8px 0; margin: 1.5rem 0; }
+        .important { border-left: 4px solid var(--primary); background: rgba(0, 122, 204, 0.1); padding: 1rem; border-radius: 0 8px 8px 0; }
+
+        .mode-tag { display: inline-block; background: var(--primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 10px; }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 768px) { nav { display: none; } main { margin-left: 0; padding: 2rem; } }
+    </style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
+
+<nav>
+    <div class="nav-header" id="nav-header-lang">Language / Мова</div>
+    <div class="lang-switcher">
+        <button class="lang-btn active" onclick="setLanguage('en')" id="btn-en">English</button>
+        <button class="lang-btn" onclick="setLanguage('uk')" id="btn-uk">Українська</button>
+    </div>
+
+    <div class="nav-header" id="nav-header-docs">Documentation</div>
+    <a href="#general" id="nav-general">General Look</a>
+    <a href="#controls" id="nav-controls">Control Block</a>
+    <a href="#parameters" id="nav-parameters">Parameters</a>
+    <a href="#modes" id="nav-modes">Generating Modes</a>
+    <a href="#performance" id="nav-performance">Performance</a>
+</nav>
+
+<main>
+    <h1 id="main-title">High Speed Traffic Generator</h1>
+    <p id="main-desc">Welcome to the official manual. This tool is designed for high-performance network stress testing using DPDK and PF_RING technologies.</p>
+
+    <section id="general">
+        <h2 id="title-general">General Look</h2>
+        <p id="desc-general">The application interface is organized into 4 logical zones:</p>
+        <div class="card">
+            <ul id="list-general">
+                <li><strong>Parameters Block:</strong> Configuration of network interfaces and packet headers.</li>
+                <li><strong>Info Block:</strong> Real-time statistics and counters.</li>
+                <li><strong>Graph Block:</strong> Visual representation of throughput (bps/BPS).</li>
+                <li><strong>Control Block:</strong> Main execution controls (Start, Stop, Pause).</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="controls">
+        <h2 id="title-controls">Control Block</h2>
+        <p id="desc-controls">Located at the base of the dashboard, this block manages the generator lifecycle.</p>
+        <ul id="list-controls">
+            <li><strong>Start/Stop:</strong> Toggle traffic generation. Note that parameters are locked while active.</li>
+            <li><strong>Pause/Resume:</strong> Temporarily halt transmission without resetting counters.</li>
+            <li><strong>Time Selector:</strong> 00:00:00 for continuous flow, or set a specific countdown.</li>
+        </ul>
+    </section>
+
+    <section id="parameters">
+        <h2 id="title-parameters">Parameters</h2>
+        <div class="card" id="list-params-details">
+            <p><strong>Interface:</strong> The network device (NIC) used for output.</p>
+            <p><strong>Packet Size:</strong> 16B to 64KB. Smaller packets increase CPU overhead.</p>
+            <p><strong>Burst Size:</strong> (DPDK/ZC) Number of packets sent per DMA transaction.</p>
+            <p><strong>Copies / Sent:</strong> Termination limits. Set to 0 for infinite.</p>
+        </div>
+    </section>
+
+    <section id="modes">
+        <h2 id="title-modes">Generating Modes</h2>
+        <div class="card">
+            <p><span class="mode-tag">PF_RING_STANDARD</span> <span id="desc-pf-std">Uses default PF_RING sockets. Requires pfring.ko module.</span></p>
+            <hr style="border:0; border-top:1px solid var(--border); margin: 15px 0;">
+            <p><span class="mode-tag">PF_RING_ZC</span> <span id="desc-pf-zc">Zero Copy mode. Bypasses kernel. Requires specific ZC drivers.</span></p>
+            <hr style="border:0; border-top:1px solid var(--border); margin: 15px 0;">
+            <p><span class="mode-tag">DPDK</span> <span id="desc-dpdk">Direct hardware access. Requires HugePages and DPDK environment.</span></p>
+        </div>
+    </section>
+
+    <section id="performance">
+        <div class="note">
+            <h3 id="title-perf">Important Note on Speed</h3>
+            <p id="desc-perf">Preferred speed is a target. Real-world output may be lower due to hardware limits, small packet overhead, or kernel latency.</p>
+        </div>
+    </section>
+</main>
+
+<script>
+    const translations = {
+        en: {
+            docTitle: "Generator Help & Manual",
+            navDocs: "Documentation",
+            navGeneral: "General Look",
+            navControls: "Control Block",
+            navParams: "Parameters",
+            navModes: "Generating Modes",
+            navPerf: "Performance",
+            mainTitle: "High Speed Traffic Generator",
+            mainDesc: "Welcome to the official manual. This tool is designed for high-performance network stress testing using DPDK and PF_RING technologies.",
+            titleGeneral: "General Look",
+            descGeneral: "The application interface is organized into 4 logical zones:",
+            listGeneral: `<li><strong>Parameters Block:</strong> Configuration of network interfaces.</li><li><strong>Info Block:</strong> Real-time statistics.</li><li><strong>Graph Block:</strong> Visual throughput.</li><li><strong>Control Block:</strong> Start, Stop, Pause.</li>`,
+            titleControls: "Control Block",
+            descControls: "Located at the base of the dashboard, this block manages the generator lifecycle.",
+            listControls: `<li><strong>Start/Stop:</strong> Toggle traffic. Parameters lock while active.</li><li><strong>Pause/Resume:</strong> Halt transmission without resetting.</li><li><strong>Time Selector:</strong> Set countdown or 0 for infinite.</li>`,
+            titleParams: "Parameters",
+            paramsDetails: `<p><strong>Interface:</strong> The network device (NIC) used for output.</p><p><strong>Packet Size:</strong> 16B to 64KB. Smaller packets increase CPU overhead.</p><p><strong>Burst Size:</strong> (DPDK/ZC) Packets per DMA transaction.</p><p><strong>Copies / Sent:</strong> Termination limits. Set to 0 for infinite.</p>`,
+            descPfStd: "Uses default PF_RING sockets. Requires pfring.ko module.",
+            descPfZc: "Zero Copy mode. Bypasses kernel. Requires specific ZC drivers.",
+            descDpdk: "Direct hardware access. Requires HugePages and DPDK environment.",
+            titlePerf: "Important Note on Speed",
+            descPerf: "Preferred speed is a target. Real-world output may be lower due to hardware limits, small packet overhead, or kernel latency."
+        },
+        uk: {
+            docTitle: "Довідка та Посібник Генератора",
+            navDocs: "Документація",
+            navGeneral: "Загальний вигляд",
+            navControls: "Блок керування",
+            navParams: "Параметри",
+            navModes: "Режими генерації",
+            navPerf: "Продуктивність",
+            mainTitle: "Високошвидкісний Генератор Трафіку",
+            mainDesc: "Ласкаво просимо до офіційного посібника. Цей інструмент розроблений для тестування мереж за допомогою технологій DPDK та PF_RING.",
+            titleGeneral: "Загальний вигляд",
+            descGeneral: "Інтерфейс програми організований у 4 логічні зони:",
+            listGeneral: `<li><strong>Блок параметрів:</strong> Конфігурація мережевих інтерфейсів.</li><li><strong>Блок інформації:</strong> Статистика в реальному часі.</li><li><strong>Блок графіка:</strong> Візуалізація пропускної здатності.</li><li><strong>Блок керування:</strong> Старт, Стоп, Пауза.</li>`,
+            titleControls: "Блок керування",
+            descControls: "Цей блок керує життєвим циклом генератора.",
+            listControls: `<li><strong>Старт/Стоп:</strong> Перемикання генерації. Параметри блокуються під час роботи.</li><li><strong>Пауза/Відновити:</strong> Тимчасова зупинка без скидання лічильників.</li><li><strong>Селектор часу:</strong> Встановіть зворотний відлік або 0 для нескінченності.</li>`,
+            titleParams: "Параметри",
+            paramsDetails: `<p><strong>Інтерфейс:</strong> Мережевий пристрій (NIC) для виводу.</p><p><strong>Розмір пакета:</strong> від 16B до 64KB. Менші пакети збільшують навантаження на CPU.</p><p><strong>Розмір порції (Burst):</strong> (DPDK/ZC) Кількість пакетів за одну транзакцію DMA.</p><p><strong>Копії / Надіслано:</strong> Ліміти завершення. 0 — для нескінченної генерації.</p>`,
+            descPfStd: "Використовує стандартні сокети PF_RING. Потребує модуль pfring.ko.",
+            descPfZc: "Режим Zero Copy. Обходить ядро. Потребує спеціальні ZC драйвери.",
+            descDpdk: "Прямий доступ до заліза. Потребує HugePages та налаштування середовища DPDK.",
+            titlePerf: "Важливе зауваження щодо швидкості",
+            descPerf: "Бажана швидкість є цільовою. Реальна швидкість може бути нижчою через апаратні обмеження або накладні витрати на малі пакети."
+        }
+    };
+
+    function setLanguage(lang) {
+        const t = translations[lang];
+        document.getElementById('doc-title').innerText = t.docTitle;
+        document.getElementById('nav-header-docs').innerText = t.navDocs;
+        document.getElementById('nav-general').innerText = t.navGeneral;
+        document.getElementById('nav-controls').innerText = t.navControls;
+        document.getElementById('nav-parameters').innerText = t.navParams;
+        document.getElementById('nav-modes').innerText = t.navModes;
+        document.getElementById('nav-performance').innerText = t.navPerf;
+        document.getElementById('main-title').innerText = t.mainTitle;
+        document.getElementById('main-desc').innerText = t.mainDesc;
+        document.getElementById('title-general').innerText = t.titleGeneral;
+        document.getElementById('desc-general').innerText = t.descGeneral;
+        document.getElementById('list-general').innerHTML = t.listGeneral;
+        document.getElementById('title-controls').innerText = t.titleControls;
+        document.getElementById('desc-controls').innerText = t.descControls;
+        document.getElementById('list-controls').innerHTML = t.listControls;
+        document.getElementById('title-parameters').innerText = t.titleParams;
+        document.getElementById('list-params-details').innerHTML = t.paramsDetails;
+        document.getElementById('desc-pf-std').innerText = t.descPfStd;
+        document.getElementById('desc-pf-zc').innerText = t.descPfZc;
+        document.getElementById('desc-dpdk').innerText = t.descDpdk;
+        document.getElementById('title-perf').innerText = t.titlePerf;
+        document.getElementById('desc-perf').innerText = t.descPerf;
+
+        // Update button states
+        document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`btn-${lang}`).classList.add('active');
+    }
+
+    function toggleTheme() {
+        const root = document.documentElement;
+        root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    }
+</script>
+
+</body>
+</html>
