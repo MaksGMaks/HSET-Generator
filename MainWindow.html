@@ -345,7 +345,7 @@
         // 3. Construct URL
         // If targetPort is empty (because of a tunnel), just use host. Otherwise, add :port
         const portSuffix = targetPort ? `:${targetPort}` : '';
-        const connectionUrl = `${wsProtocol}${hostClean}${portSuffix}`;
+        const connectionUrl = `${wsProtocol}${hostClean}`;
 
         console.log(`Connecting to WebSocket: ${connectionUrl}`);
         socket = new WebSocket(connectionUrl);
