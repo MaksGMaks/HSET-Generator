@@ -330,37 +330,27 @@
     const targetPort = urlParams.get('port');
 
     function initConnection() {
-        // // 1. Strip 'http://' or 'https://' from the targetHost if it exists
-        // const hostClean = targetHost.replace(/^https?:\/\//, '');
-        //
-        // // 2. Determine protocol
-        // const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const urlParams = new URLSearchParams(window.location.search);
+        let targetHost = urlParams.get('host') || '127.0.0.1';
+        const targetPort = urlParams.get('target_port');
 
-        // 3. Construct the clean URL
-        const connectionUrl = `${targetHost}:${targetPort}`;
+        // 1. Clean the host: Strip "http://" or "https://" so we can add "ws://" or "wss://"
+        // This handles the "Protocol Sandwich" error you saw earlier.
+        const hostClean = targetHost.replace(/^https?:\/\//, '');
 
-        console.log(`Connecting to: ${connectionUrl}`);
+        // 2. Determine WS protocol based on current page security
+        const isSecure = window.location.protocol === 'https:';
+        const wsProtocol = isSecure ? 'wss://' : 'ws://';
+
+        // 3. Construct URL
+        // If targetPort is empty (because of a tunnel), just use host. Otherwise, add :port
+        const portSuffix = targetPort ? `:${targetPort}` : '';
+        const connectionUrl = `${wsProtocol}${hostClean}${portSuffix}`;
+
+        console.log(`Connecting to WebSocket: ${connectionUrl}`);
         socket = new WebSocket(connectionUrl);
 
-        socket.onopen = () => {
-            console.log("Connected to hardware slot.");
-            isInitialized = false;
-        };
-
-        socket.onmessage = (event) => {
-            console.log("On message event", event);
-            handleMessage(event.data);
-        };
-
-        socket.onclose = () => {
-            console.log("Disconnected.");
-            alert("Connection closed.");
-            // window.location.href = 'index.html';
-        };
-
-        socket.onerror = (err) => {
-            console.error("WebSocket Error: Check if the server is running and supports WebSockets.");
-        };
+        // ... rest of your socket logic (onopen, onmessage, etc.) ...
     }
 
     /**
