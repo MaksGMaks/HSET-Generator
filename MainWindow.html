@@ -330,49 +330,166 @@
     const targetPort = urlParams.get('port');
 
     function initConnection() {
-        // Note: Browser requires WebSockets.
-        // If your C++ is raw TCP, you must use a tool like 'websockify'
-        // or update C++ to use boost::beast.
         const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-        socket = new WebSocket(`${wsProtocol}${targetHost}:${targetPort}`);
+        const connectionUrl = `${wsProtocol}${targetHost}:${targetPort}`;
+
+        console.log(`Connecting to: ${connectionUrl}`);
+        socket = new WebSocket(connectionUrl);
+
+        socket.onopen = () => {
+            console.log("Connected to server");
+            // In Qt, you call getInterfaceInfo() immediately after connecting.
+            // The first message received will be handled as Interface Info.
+            isInitialized = false;
+        };
 
         socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-
-            // If the data is a progress update from UIUpdater
-            if (data.type === "UPDATE") {
-                updateUI(data.bps, data.pps);
-                updateChart(data.bps);
-            }
+            handleMessage(event.data);
         };
 
         socket.onclose = () => {
-            alert("Disconnected from Hardware Slot.");
-            window.location.href = 'index.html';
+            console.log("Disconnected from server");
+            isRunning = false;
+            alert("Server disconnected");
+            window.location.href = 'page1.html'; // Equivalent to disconnectNotify signal
+        };
+
+        socket.onerror = (err) => {
+            console.error("Socket error:", err);
         };
     }
 
-    function onStartClicked() {
-        if (!socket || socket.readyState !== WebSocket.OPEN) return;
+    /**
+     * Logic Switcher: Mirrors the transition from
+     * getInterfaceInfo() to dataResponseReceive()
+     */
+    function handleMessage(rawData) {
+        try {
+            const jsonResponse = JSON.parse(rawData);
 
-        const msg = [{
-            "type": 1, // jsonHeaders::TypeC::REQUEST
-            "command": isRunning ? 4 : 1, // FINISH : START
+            // Qt client expects an array: jsonResponse.array().at(0).toObject()
+            const dataObject = Array.isArray(jsonResponse) ? jsonResponse[0] : jsonResponse;
+
+            if (!isInitialized) {
+                // --- Equivalent to NetworkManager::getInterfaceInfo() ---
+                processInterfaceInfo(dataObject);
+                isInitialized = true;
+            } else {
+                // --- Equivalent to NetworkManager::dataResponseReceive() ---
+                processDataResponse(dataObject);
+            }
+        } catch (e) {
+            console.error("[NetworkManager] Invalid JSON or Parse Error", e);
+        }
+    }
+
+    /**
+     * Updates UI with hardware capabilities
+     */
+    function processInterfaceInfo(obj) {
+        console.log("Received device info:", obj);
+
+        // Mapping from your C++ jsonHeaders
+        const mode = {
+            name: obj["InterfaceName"],
+            dpdk: obj["DpdkSupported"],
+            pf_ring: obj["PfRingSupported"],
+            zc: obj["PfRingZcSupported"]
+        };
+
+        // Update UI elements (Interface name, etc.)
+        document.getElementById('in-interface').value = mode.name;
+        // You could also disable/enable dropdown options based on .dpdk or .pf_ring
+    }
+
+    /**
+     * Updates UI with real-time traffic stats
+     */
+    function processDataResponse(obj) {
+        if (!isRunning) return;
+
+        // Mapping from your C++ jsonHeaders::receivedData
+        const stats = {
+            BPS: parseFloat(obj["BPS"]),
+            bps: parseFloat(obj["bps"]),
+            pps: parseInt(obj["pps"]),
+            total: parseInt(obj["TotalSend"])
+        };
+
+        // Update Dashboard & Chart
+        updateUI(stats.bps, stats.pps); // Function from your existing page2 script
+        updateChart(stats.bps);         // Function from your existing page2 script
+        document.getElementById('val-total').innerText = stats.total.toLocaleString();
+    }
+
+    /**
+     * Equivalent to NetworkManager::startGenerator()
+     */
+    function onStartClicked() {
+        if (isRunning) {
+            stopGenerator();
+            return;
+        }
+
+        // Prepare JSON Array exactly like Qt: startRespArray.append(startRespObj)
+        const params = [{
+            "type": 1,    // TypeC::REQUEST
+            "command": 1, // CommandC::START
             "params": {
                 "mode": document.getElementById('in-mode').value,
                 "speed": document.getElementById('in-speed').value,
-                "size": document.getElementById('in-size').value
-                // ... add other params from your UI
+                "pack_size": document.getElementById('in-size').value,
+                "time": "0", // Add other params as needed
+                "burst_size": "1",
+                "packet_pattern": "0",
+                "file_send": false,
+                "copies": "1",
+                "total_send": "0"
             }
         }];
 
-        socket.send(JSON.stringify(msg));
+        socket.send(JSON.stringify(params));
+        isRunning = true;
 
-        // UI Toggle logic
-        isRunning = !isRunning;
+        // Update UI Button
         const btn = document.getElementById('btn-start');
-        btn.innerText = isRunning ? "■ Stop" : "▶ Start";
-        btn.style.background = isRunning ? "var(--error)" : "var(--primary)";
+        btn.innerText = "■ Stop";
+        btn.style.background = "var(--error)";
+        document.getElementById('btn-pause').disabled = false;
+    }
+
+    /**
+     * Equivalent to NetworkManager::stopGenerator()
+     */
+    function stopGenerator() {
+        const params = [{
+            "type": 1,
+            "command": 4 // CommandC::FINISH (or STOP)
+        }];
+
+        socket.send(JSON.stringify(params));
+        isRunning = false;
+
+        const btn = document.getElementById('btn-start');
+        btn.innerText = "▶ Start";
+        btn.style.background = "var(--primary)";
+        document.getElementById('btn-pause').disabled = true;
+    }
+
+    /**
+     * Equivalent to NetworkManager::pauseGenerator()
+     */
+    function onPauseClicked() {
+        const isCurrentlyPaused = document.getElementById('btn-pause').innerText.includes("Resume");
+
+        const params = [{
+            "type": 1,
+            "command": isCurrentlyPaused ? 3 : 2 // RESUME=3, PAUSE=2
+        }];
+
+        socket.send(JSON.stringify(params));
+
+        document.getElementById('btn-pause').innerText = isCurrentlyPaused ? "|| Pause" : "▶ Resume";
     }
 
     // Call this when page loads
