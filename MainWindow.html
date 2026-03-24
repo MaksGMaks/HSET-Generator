@@ -330,14 +330,14 @@
     const targetPort = urlParams.get('port');
 
     function initConnection() {
-        // 1. Strip 'http://' or 'https://' from the targetHost if it exists
-        const hostClean = targetHost.replace(/^https?:\/\//, '');
-
-        // 2. Determine protocol
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        // // 1. Strip 'http://' or 'https://' from the targetHost if it exists
+        // const hostClean = targetHost.replace(/^https?:\/\//, '');
+        //
+        // // 2. Determine protocol
+        // const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
 
         // 3. Construct the clean URL
-        const connectionUrl = `${wsProtocol}${hostClean}:${targetPort}`;
+        const connectionUrl = `${hostClean}:${targetPort}`;
 
         console.log(`Connecting to: ${connectionUrl}`);
         socket = new WebSocket(connectionUrl);
