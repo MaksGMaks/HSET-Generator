@@ -337,7 +337,7 @@
         // const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
 
         // 3. Construct the clean URL
-        const connectionUrl = `${hostClean}:${targetPort}`;
+        const connectionUrl = `${targetHost}:${targetPort}`;
 
         console.log(`Connecting to: ${connectionUrl}`);
         socket = new WebSocket(connectionUrl);
