@@ -348,6 +348,7 @@
         };
 
         socket.onmessage = (event) => {
+            console.log("On message event", event);
             handleMessage(event.data);
         };
 
