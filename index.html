@@ -154,9 +154,32 @@
 
     function onConnectClicked() {
         const selected = availableSlots[slotsDropdown.value];
-        const host = addressInput.value.trim();
-        // Pass the target to Page 2
-        window.location.href = `MainWindow.html?host=${host}&port=${selected.Port}`;
+        const manualHost = addressInput.value.trim();
+
+        /**
+         * LOGIC:
+         * 1. If the server provided a 'ServerHTTP' (like a Serveo URL), use it.
+         * 2. If not, use the IP/Host typed in the box and the specific port for that slot.
+         */
+        let finalHost;
+        let finalPort;
+
+        if (selected.ServerHTTP && selected.ServerHTTP.length > 0) {
+            // Use the tunnel URL provided by the manager
+            finalHost = selected.ServerHTTP;
+            // Usually, tunnels (Serveo/Cloudflare) use port 443 (default HTTPS),
+            // so we don't need to append a port to the URL.
+            finalPort = "";
+        } else {
+            // Fallback to manual IP + the port assigned to that specific hardware slot
+            finalHost = manualHost;
+            finalPort = selected.Port;
+        }
+
+        // Redirect to Page 2 with the specific hardware target
+        const targetUrl = `MainWindow.html?host=${encodeURIComponent(finalHost)}&target_port=${finalPort}`;
+        console.log("Redirecting to slot:", targetUrl);
+        window.location.href = targetUrl;
     }
 </script>
 </body>
