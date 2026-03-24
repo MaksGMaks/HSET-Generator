@@ -53,7 +53,7 @@
         <div class="connection-column">
             <label>Server IP / Tunnel Address</label>
             <input type="text" id="address-input" placeholder="e.g. 127.0.0.1" value="127.0.0.1">
-            
+
             <label>Available Interface Slots</label>
             <select id="slots-dropdown">
                 <option value="">Search for hardware first...</option>
@@ -84,62 +84,62 @@
 
     let availableSlots = [];
 
-    async function onSearchClicked() {
-        let input = addressInput.value.trim();
-        if (!input) return alert("Enter an IP or Address");
-
-        // Logic to build the URL automatically
-        let finalUrl = "";
-        
-        // 1. Determine Protocol: Use HTTP for local IPs, HTTPS for everything else
-        const isLocal = input === "127.0.0.1" || input === "localhost" || input.startsWith("192.168.");
-        const protocol = isLocal ? "http://" : "https://";
-
-        // 2. Clean input (remove protocol if user typed it)
-        let cleanInput = input.replace(/^https?:\/\//, '');
-
-        // 3. Append static port if not a cloud tunnel (tunnels usually use 443/SSL default)
-        if (isLocal || /^[0-9.]+$/.test(cleanInput)) {
-            finalUrl = `${protocol}${cleanInput}:${STATIC_PORT}`;
-        } else {
-            // Likely a Cloudflare Tunnel (already handles port 443 -> 5000 internally)
-            finalUrl = `${protocol}${cleanInput}`;
-        }
-
-        console.log("Targeting Server at:", finalUrl);
-        overlay.style.display = 'flex';
-
-        try {
-            const response = await fetch(finalUrl, { 
-                method: 'GET', 
-                mode: 'cors' 
-            });
-
-            if (!response.ok) throw new Error(`Status ${response.status}`);
-            const data = await response.json();
-            
-            if(data.session_token) {
-                localStorage.setItem('hset_access_token', data.session_token);
-            }
-
-            if(data.slots) {
-                availableSlots = data.slots;
-                slotsDropdown.innerHTML = '';
-                data.slots.forEach((slot, index) => {
-                    const opt = document.createElement('option');
-                    opt.value = index;
-                    opt.textContent = `${slot.InterfaceName} (Port: ${slot.Port})`;
-                    slotsDropdown.appendChild(opt);
-                });
-                updateSlotDetails(0);
-                btnConnect.disabled = false;
-            }
-        } catch (error) {
-            alert("Connection Failed. Ensure your C++ server is running on port 5000 and CORS is enabled.\n\nError: " + error.message);
-        } finally {
-            overlay.style.display = 'none';
-        }
-    }
+    // async function onSearchClicked() {
+    //     let input = addressInput.value.trim();
+    //     if (!input) return alert("Enter an IP or Address");
+    //
+    //     // Logic to build the URL automatically
+    //     let finalUrl = "";
+    //
+    //     // 1. Determine Protocol: Use HTTP for local IPs, HTTPS for everything else
+    //     const isLocal = input === "127.0.0.1" || input === "localhost" || input.startsWith("192.168.");
+    //     const protocol = isLocal ? "http://" : "https://";
+    //
+    //     // 2. Clean input (remove protocol if user typed it)
+    //     let cleanInput = input.replace(/^https?:\/\//, '');
+    //
+    //     // 3. Append static port if not a cloud tunnel (tunnels usually use 443/SSL default)
+    //     if (isLocal || /^[0-9.]+$/.test(cleanInput)) {
+    //         finalUrl = `${protocol}${cleanInput}:${STATIC_PORT}`;
+    //     } else {
+    //         // Likely a Cloudflare Tunnel (already handles port 443 -> 5000 internally)
+    //         finalUrl = `${protocol}${cleanInput}`;
+    //     }
+    //
+    //     console.log("Targeting Server at:", finalUrl);
+    //     overlay.style.display = 'flex';
+    //
+    //     try {
+    //         const response = await fetch(finalUrl, {
+    //             method: 'GET',
+    //             mode: 'cors'
+    //         });
+    //
+    //         if (!response.ok) throw new Error(`Status ${response.status}`);
+    //         const data = await response.json();
+    //
+    //         if(data.session_token) {
+    //             localStorage.setItem('hset_access_token', data.session_token);
+    //         }
+    //
+    //         if(data.slots) {
+    //             availableSlots = data.slots;
+    //             slotsDropdown.innerHTML = '';
+    //             data.slots.forEach((slot, index) => {
+    //                 const opt = document.createElement('option');
+    //                 opt.value = index;
+    //                 opt.textContent = `${slot.InterfaceName} (Port: ${slot.Port})`;
+    //                 slotsDropdown.appendChild(opt);
+    //             });
+    //             updateSlotDetails(0);
+    //             btnConnect.disabled = false;
+    //         }
+    //     } catch (error) {
+    //         alert("Connection Failed. Ensure your C++ server is running on port 5000 and CORS is enabled.\n\nError: " + error.message);
+    //     } finally {
+    //         overlay.style.display = 'none';
+    //     }
+    // }
 
     function updateSlotDetails(index) {
         const slot = availableSlots[index];
@@ -152,10 +152,47 @@
         document.getElementById('val-status').style.color = "var(--success)";
     }
 
+    async function onSearchClicked() {
+        let input = addressInput.value.trim();
+        if (!input) return alert("Enter IP");
+
+        const isLocal = input === "127.0.0.1" || input === "localhost";
+        // Force WebSocket protocol for browser compatibility
+        const protocol = isLocal ? "http://" : "https://";
+        const finalUrl = `${protocol}${input.replace(/^https?:\/\//, '')}:${STATIC_PORT}/status`;
+
+        overlay.style.display = 'flex';
+
+        try {
+            // In a real scenario, the C++ server needs to respond to this GET request
+            const response = await fetch(finalUrl);
+            const data = await response.json();
+
+            if (data.slots) {
+                availableSlots = data.slots;
+                slotsDropdown.innerHTML = '';
+                data.slots.forEach((slot, index) => {
+                    const opt = document.createElement('option');
+                    opt.value = index;
+                    // Only allow connecting if slot is not busy
+                    opt.disabled = slot.busy;
+                    opt.textContent = `${slot.InterfaceName} ${slot.busy ? '(BUSY)' : '(READY)'}`;
+                    slotsDropdown.appendChild(opt);
+                });
+                btnConnect.disabled = false;
+            }
+        } catch (error) {
+            alert("Server found, but ensure CORS is enabled in C++.");
+        } finally {
+            overlay.style.display = 'none';
+        }
+    }
+
     function onConnectClicked() {
         const selected = availableSlots[slotsDropdown.value];
-        // Move to Page 2 with the selected slot's port in the URL
-        window.location.href = `page2.html?target_port=${selected.Port}`;
+        const host = addressInput.value.trim();
+        // Pass the target to Page 2
+        window.location.href = `page2.html?host=${host}&port=${selected.Port}`;
     }
 </script>
 </body>

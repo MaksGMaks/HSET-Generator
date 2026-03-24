@@ -323,6 +323,60 @@
         link.href = document.getElementById('mainChart').toDataURL('image/png');
         link.click();
     }
+
+    let socket = null;
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetHost = urlParams.get('host');
+    const targetPort = urlParams.get('port');
+
+    function initConnection() {
+        // Note: Browser requires WebSockets.
+        // If your C++ is raw TCP, you must use a tool like 'websockify'
+        // or update C++ to use boost::beast.
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        socket = new WebSocket(`${wsProtocol}${targetHost}:${targetPort}`);
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            // If the data is a progress update from UIUpdater
+            if (data.type === "UPDATE") {
+                updateUI(data.bps, data.pps);
+                updateChart(data.bps);
+            }
+        };
+
+        socket.onclose = () => {
+            alert("Disconnected from Hardware Slot.");
+            window.location.href = 'page1.html';
+        };
+    }
+
+    function onStartClicked() {
+        if (!socket || socket.readyState !== WebSocket.OPEN) return;
+
+        const msg = [{
+            "type": 1, // jsonHeaders::TypeC::REQUEST
+            "command": isRunning ? 4 : 1, // FINISH : START
+            "params": {
+                "mode": document.getElementById('in-mode').value,
+                "speed": document.getElementById('in-speed').value,
+                "size": document.getElementById('in-size').value
+                // ... add other params from your UI
+            }
+        }];
+
+        socket.send(JSON.stringify(msg));
+
+        // UI Toggle logic
+        isRunning = !isRunning;
+        const btn = document.getElementById('btn-start');
+        btn.innerText = isRunning ? "■ Stop" : "▶ Start";
+        btn.style.background = isRunning ? "var(--error)" : "var(--primary)";
+    }
+
+    // Call this when page loads
+    window.onload = initConnection;
 </script>
 
 </body>
