@@ -158,338 +158,211 @@
 </main>
 
 <script>
-    // --- State Management ---
+    let socket = null;
+    let isInitialized = false;
     let isRunning = false;
     let isPaused = false;
-    let currentUnit = 'bps'; // bps or BPS
-    let timerIdx = 0;
-    let dataPoints = [];
-    let simulationTimer = null;
 
-    // --- Translations ---
-    const i18n = {
-        en: {
-            params: "Parameters", interface: "Interface:", mode: "Mode:", 
-            speed: "Pref. Speed:", size: "Packet Size:", time: "Time:",
-            start: "▶ Start", stop: "■ Stop", curSpeed: "Current Speed", total: "Total Sent"
-        },
-        uk: {
-            params: "Параметри", interface: "Інтерфейс:", mode: "Режим:", 
-            speed: "Бажана швидкість:", size: "Розмір пакету:", time: "Час:",
-            start: "▶ Старт", stop: "■ Стоп", curSpeed: "Поточна швидкість", total: "Всього відправлено"
-        }
-    };
+    // ===================== INIT =====================
+    function initConnection() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let targetHost = urlParams.get('host') || window.location.hostname;
+        let targetPort = urlParams.get('target_port') || "8080";
 
-    // --- Chart Setup ---
-    const ctx = document.getElementById('mainChart').getContext('2d');
-    const chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [{
-                label: 'Traffic rate',
-                data: [],
-                borderColor: '#007acc',
-                backgroundColor: 'rgba(0, 122, 204, 0.1)',
-                fill: true,
-                tension: 0.3,
-                pointRadius: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            scales: {
-                x: { grid: { display: false }, ticks: { color: '#888' } },
-                y: { beginAtZero: true, ticks: { color: '#888' } }
-            },
-            plugins: { legend: { display: false } }
-        }
-    });
+        const hostClean = targetHost.replace(/^https?:\/\//, '');
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const connectionUrl = `${wsProtocol}${hostClean}:${targetPort}`;
 
-    // --- Core Logic ---
-    function onStartClicked() {
-        isRunning = !isRunning;
+        console.log("[WS] Connecting:", connectionUrl);
+
+        socket = new WebSocket(connectionUrl);
+
+        socket.onopen = () => {
+            console.log("[WS] Connected");
+        };
+
+        socket.onmessage = (event) => {
+            handleMessage(event.data);
+        };
+
+        socket.onclose = () => {
+            console.warn("[WS] Connection closed");
+            isRunning = false;
+            isPaused = false;
+            resetUIState();
+        };
+
+        socket.onerror = (err) => {
+            console.error("[WS] Error:", err);
+        };
+    }
+
+    // ===================== UI RESET =====================
+    function resetUIState() {
         const btn = document.getElementById('btn-start');
         const pauseBtn = document.getElementById('btn-pause');
 
-        if (isRunning) {
-            btn.innerText = i18n[currentLang].stop;
-            btn.style.background = "var(--error)";
-            pauseBtn.disabled = false;
-            startSim();
-        } else {
-            btn.innerText = i18n[currentLang].start;
-            btn.style.background = "var(--primary)";
-            pauseBtn.disabled = true;
-            stopSim();
-        }
+        btn.innerText = "▶ Start";
+        btn.style.background = "var(--primary)";
+        pauseBtn.disabled = true;
+        pauseBtn.innerText = "|| Pause";
     }
 
-    function onPauseClicked() {
-        isPaused = !isPaused;
-        document.getElementById('btn-pause').innerText = isPaused ? "▶ Resume" : "|| Pause";
-    }
-
-    function startSim() {
-        timerIdx = 0;
-        dataPoints = [];
-        chart.data.labels = [];
-        chart.data.datasets[0].data = [];
-        
-        simulationTimer = setInterval(() => {
-            if (isPaused) return;
-
-            // Generate mock data (simulating your receivedData struct)
-            const rawBps = Math.random() * 800000000 + 100000000; // ~100-900 Mbps
-            const pps = Math.floor(rawBps / (64 * 8));
-            
-            updateUI(rawBps, pps);
-            updateChart(rawBps);
-        }, 1000);
-    }
-
-    function stopSim() {
-        clearInterval(simulationTimer);
-    }
-
-    function updateUI(bps, pps) {
-        let val, unit;
-        if (bps >= 1e9) { val = bps / 1e9; unit = "Gbps"; }
-        else if (bps >= 1e6) { val = bps / 1e6; unit = "Mbps"; }
-        else { val = bps / 1e3; unit = "Kbps"; }
-
-        document.getElementById('val-speed').innerText = val.toFixed(2);
-        document.getElementById('val-unit').innerText = unit;
-        document.getElementById('val-pps').innerText = pps.toLocaleString();
-        document.getElementById('val-total').innerText = (parseInt(document.getElementById('val-total').innerText.replace(/,/g, '')) + (bps/8)).toLocaleString();
-    }
-
-    function updateChart(bps) {
-        const value = currentUnit === 'bps' ? bps : bps / 8;
-        timerIdx++;
-        
-        chart.data.labels.push(timerIdx);
-        chart.data.datasets[0].data.push(value);
-
-        if (chart.data.labels.length > 20) {
-            chart.data.labels.shift();
-            chart.data.datasets[0].data.shift();
-        }
-        chart.update();
-    }
-
-    // --- UI Helpers ---
-    let currentLang = 'en';
-    function setLanguage(lang) {
-        currentLang = lang;
-        const dict = i18n[lang];
-        document.getElementById('t-params').innerText = dict.params;
-        document.getElementById('l-interface').innerText = dict.interface;
-        document.getElementById('l-mode').innerText = dict.mode;
-        document.getElementById('l-speed').innerText = dict.speed;
-        document.getElementById('l-pkt-size').innerText = dict.size;
-        document.getElementById('l-time').innerText = dict.time;
-        document.getElementById('btn-start').innerText = isRunning ? dict.stop : dict.start;
-        document.getElementById('l-stat-speed').innerText = dict.curSpeed;
-        document.getElementById('l-stat-total').innerText = dict.total;
-    }
-
-    function setTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        chart.options.scales.x.ticks.color = theme === 'dark' ? '#888' : '#444';
-        chart.options.scales.y.ticks.color = theme === 'dark' ? '#888' : '#444';
-        chart.update();
-    }
-
-    function switchUnit(unit, el) {
-        currentUnit = unit;
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        el.classList.add('active');
-        // In a real app, you would rescale the existing dataPoints here
-    }
-
-    function toggleFileMode() {
-        const btn = document.getElementById('btn-file');
-        const isOff = btn.innerText.includes("OFF");
-        btn.innerText = isOff ? "📁 Send File: ON" : "📁 Send File: OFF";
-        btn.style.background = isOff ? "var(--success)" : "var(--secondary)";
-    }
-
-    function saveGraph() {
-        const link = document.createElement('a');
-        link.download = 'traffic_graph.png';
-        link.href = document.getElementById('mainChart').toDataURL('image/png');
-        link.click();
-    }
-
-    let socket = null;
-    const urlParams = new URLSearchParams(window.location.search);
-    const targetHost = urlParams.get('host');
-    const targetPort = urlParams.get('port');
-
-    function initConnection() {
-        const urlParams = new URLSearchParams(window.location.search);
-        let targetHost = urlParams.get('host') || '127.0.0.1';
-        const targetPort = urlParams.get('target_port');
-
-        // 1. Clean the host: Strip "http://" or "https://" so we can add "ws://" or "wss://"
-        // This handles the "Protocol Sandwich" error you saw earlier.
-        const hostClean = targetHost.replace(/^https?:\/\//, '');
-
-        // 2. Determine WS protocol based on current page security
-        const isSecure = window.location.protocol === 'https:';
-        const wsProtocol = isSecure ? 'wss://' : 'ws://';
-
-        // 3. Construct URL
-        // If targetPort is empty (because of a tunnel), just use host. Otherwise, add :port
-        const portSuffix = targetPort ? `:${targetPort}` : '';
-        const connectionUrl = `${wsProtocol}${hostClean}`;
-
-        console.log(`Connecting to WebSocket: ${connectionUrl}`);
-        socket = new WebSocket(connectionUrl);
-
-        console.log(`Done`);
-
-        // ... rest of your socket logic (onopen, onmessage, etc.) ...
-    }
-
-    /**
-     * Logic Switcher: Mirrors the transition from
-     * getInterfaceInfo() to dataResponseReceive()
-     */
+    // ===================== MESSAGE HANDLER =====================
     function handleMessage(rawData) {
         try {
-            const jsonResponse = JSON.parse(rawData);
+            const json = JSON.parse(rawData);
+            const obj = Array.isArray(json) ? json[0] : json;
 
-            // Qt client expects an array: jsonResponse.array().at(0).toObject()
-            const dataObject = Array.isArray(jsonResponse) ? jsonResponse[0] : jsonResponse;
-
-            if (!isInitialized) {
-                // --- Equivalent to NetworkManager::getInterfaceInfo() ---
-                processInterfaceInfo(dataObject);
-                isInitialized = true;
-            } else {
-                // --- Equivalent to NetworkManager::dataResponseReceive() ---
-                processDataResponse(dataObject);
+            // --- ERROR ---
+            if (obj.error) {
+                alert(obj.error);
+                socket.close();
+                return;
             }
+
+            // --- HANDSHAKE ---
+            if (obj.status === "CONNECTED") {
+                processInterfaceInfo(obj);
+                isInitialized = true;
+                return;
+            }
+
+            // --- ACK ---
+            if (obj.type === "ACK") {
+                handleAck(obj);
+                return;
+            }
+
+            // --- DATA ---
+            processDataResponse(obj);
+
         } catch (e) {
-            console.error("[NetworkManager] Invalid JSON or Parse Error", e);
+            console.error("[WS] JSON parse error", e);
         }
     }
 
-    /**
-     * Updates UI with hardware capabilities
-     */
-    function processInterfaceInfo(obj) {
-        console.log("Received device info:", obj);
+    // ===================== ACK HANDLER =====================
+    function handleAck(obj) {
+        console.log("[ACK]", obj);
 
-        // Mapping from your C++ jsonHeaders
-        const mode = {
-            name: obj["InterfaceName"],
-            dpdk: obj["DpdkSupported"],
-            pf_ring: obj["PfRingSupported"],
-            zc: obj["PfRingZcSupported"]
-        };
+        const status = obj.status;
 
-        // Update UI elements (Interface name, etc.)
-        document.getElementById('in-interface').value = mode.name;
-        // You could also disable/enable dropdown options based on .dpdk or .pf_ring
+        const btn = document.getElementById('btn-start');
+        const pauseBtn = document.getElementById('btn-pause');
+
+        switch (status) {
+            case "STARTED":
+                isRunning = true;
+                btn.innerText = "■ Stop";
+                btn.style.background = "var(--error)";
+                pauseBtn.disabled = false;
+                break;
+
+            case "STOPPED":
+                isRunning = false;
+                resetUIState();
+                break;
+
+            case "PAUSED":
+                isPaused = true;
+                pauseBtn.innerText = "▶ Resume";
+                break;
+
+            case "RESUMED":
+                isPaused = false;
+                pauseBtn.innerText = "|| Pause";
+                break;
+        }
     }
 
-    /**
-     * Updates UI with real-time traffic stats
-     */
-    function processDataResponse(obj) {
-        if (!isRunning) return;
-
-        // Mapping from your C++ jsonHeaders::receivedData
-        const stats = {
-            BPS: parseFloat(obj["BPS"]),
-            bps: parseFloat(obj["bps"]),
-            pps: parseInt(obj["pps"]),
-            total: parseInt(obj["TotalSend"])
-        };
-
-        // Update Dashboard & Chart
-        updateUI(stats.bps, stats.pps); // Function from your existing page2 script
-        updateChart(stats.bps);         // Function from your existing page2 script
-        document.getElementById('val-total').innerText = stats.total.toLocaleString();
-    }
-
-    /**
-     * Equivalent to NetworkManager::startGenerator()
-     */
+    // ===================== START =====================
     function onStartClicked() {
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+            console.error("[WS] Not connected");
+            return;
+        }
+
         if (isRunning) {
             stopGenerator();
             return;
         }
 
-        // Prepare JSON Array exactly like Qt: startRespArray.append(startRespObj)
-        const params = [{
-            "type": 1,    // TypeC::REQUEST
-            "command": 1, // CommandC::START
-            "params": {
-                "mode": document.getElementById('in-mode').value,
-                "speed": document.getElementById('in-speed').value,
-                "pack_size": document.getElementById('in-size').value,
-                "time": "0", // Add other params as needed
-                "burst_size": "1",
-                "packet_pattern": "0",
-                "file_send": false,
-                "copies": "1",
-                "total_send": "0"
+        const payload = [{
+            type: 1,
+            command: 1,
+            params: {
+                mode: parseInt(document.getElementById('in-mode').value),
+                speed: document.getElementById('in-speed').value,
+                pack_size: document.getElementById('in-size').value
             }
         }];
 
-        socket.send(JSON.stringify(params));
-        isRunning = true;
-
-        // Update UI Button
-        const btn = document.getElementById('btn-start');
-        btn.innerText = "■ Stop";
-        btn.style.background = "var(--error)";
-        document.getElementById('btn-pause').disabled = false;
+        socket.send(JSON.stringify(payload));
     }
 
-    /**
-     * Equivalent to NetworkManager::stopGenerator()
-     */
+    // ===================== STOP =====================
     function stopGenerator() {
-        const params = [{
-            "type": 1,
-            "command": 4 // CommandC::FINISH (or STOP)
-        }];
+        if (!socket || socket.readyState !== WebSocket.OPEN) return;
 
-        socket.send(JSON.stringify(params));
-        isRunning = false;
-
-        const btn = document.getElementById('btn-start');
-        btn.innerText = "▶ Start";
-        btn.style.background = "var(--primary)";
-        document.getElementById('btn-pause').disabled = true;
+        socket.send(JSON.stringify([{
+            type: 1,
+            command: 4
+        }]));
     }
 
-    /**
-     * Equivalent to NetworkManager::pauseGenerator()
-     */
+    // ===================== PAUSE / RESUME =====================
     function onPauseClicked() {
-        const isCurrentlyPaused = document.getElementById('btn-pause').innerText.includes("Resume");
+        if (!socket || socket.readyState !== WebSocket.OPEN) return;
 
-        const params = [{
-            "type": 1,
-            "command": isCurrentlyPaused ? 3 : 2 // RESUME=3, PAUSE=2
-        }];
+        const cmd = isPaused ? 3 : 2;
 
-        socket.send(JSON.stringify(params));
-
-        document.getElementById('btn-pause').innerText = isCurrentlyPaused ? "|| Pause" : "▶ Resume";
+        socket.send(JSON.stringify([{
+            type: 1,
+            command: cmd
+        }]));
     }
 
-    // Call this when page loads
-    window.onload = initConnection;
+    // ===================== DATA =====================
+    function processDataResponse(obj) {
+        if (!isRunning) return;
+
+        const bps = Number(obj["bps"] || 0);
+        const BPS = Number(obj["BPS"] || 0);
+        const pps = Number(obj["pps"] || 0);
+        const total = Number(obj["totalSend"] || 0);
+
+        updateUI(bps, pps);
+        updateChart(bps);
+
+        const totalEl = document.getElementById('val-total');
+        if (totalEl) {
+            totalEl.innerText = total.toLocaleString();
+        }
+    }
+
+    // ===================== PLACEHOLDERS =====================
+    function processInterfaceInfo(obj) {
+        console.log("[INIT]", obj);
+        // fill UI if needed
+    }
+
+    function updateUI(bps, pps) {
+        const bpsEl = document.getElementById('val-bps');
+        const ppsEl = document.getElementById('val-pps');
+
+        if (bpsEl) bpsEl.innerText = bps.toLocaleString();
+        if (ppsEl) ppsEl.innerText = pps.toLocaleString();
+    }
+
+    function updateChart(value) {
+        // integrate with your chart lib if present
+    }
+
+    // ===================== INIT CALL =====================
+    window.onload = () => {
+        initConnection();
+    };
 </script>
 
 </body>
