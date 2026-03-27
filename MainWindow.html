@@ -296,6 +296,8 @@
             PACK_SIZE: document.getElementById('in-size').value
         }];
 
+        console.log("JSON: ", payload);
+
         socket.send(JSON.stringify(payload));
     }
 
