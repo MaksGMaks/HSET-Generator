@@ -173,7 +173,7 @@
         const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
         const connectionUrl = `${wsProtocol}${hostClean}`;
 
-        console.log("[WS] Connecting:", connectionUrl);
+        console.log("[WS] Connecting:", connectionUrl); //
 
         socket = new WebSocket(connectionUrl);
 
