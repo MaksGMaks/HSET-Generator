@@ -289,7 +289,7 @@
         }
 
         const payload = [{
-            TYPE: 1,
+            TYPE: 2,
             COMMAND: 1,
             MODE: parseInt(document.getElementById('in-mode').value),
             SPEED: document.getElementById('in-speed').value,
@@ -304,7 +304,7 @@
         if (!socket || socket.readyState !== WebSocket.OPEN) return;
 
         socket.send(JSON.stringify([{
-            TYPE: 1,
+            TYPE: 2,
             COMMAND: 4
         }]));
     }
@@ -316,7 +316,7 @@
         const cmd = isPaused ? 3 : 2;
 
         socket.send(JSON.stringify([{
-            TYPE: 1,
+            TYPE: 2,
             COMMAND: cmd
         }]));
     }
@@ -342,6 +342,10 @@
     // ===================== PLACEHOLDERS =====================
     function processInterfaceInfo(obj) {
         console.log("[INIT]", obj);
+        const interface = document.getElementById('in-interface');
+        interface.text = obj["InterfaceName"];
+        const modes = document.getElementById('in-mode');
+
         // fill UI if needed
     }
 
