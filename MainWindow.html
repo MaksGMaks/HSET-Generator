@@ -346,8 +346,9 @@
     function processInterfaceInfo(obj) {
         console.log("[INIT]", obj);
         const interface = document.getElementById('in-interface');
-        interface.text = obj["InterfaceName"].toString();
+        interface.value = obj["InterfaceName"];
         const modes = document.getElementById('in-mode');
+        
 
         // fill UI if needed
     }
