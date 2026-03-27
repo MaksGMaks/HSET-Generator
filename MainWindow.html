@@ -278,6 +278,7 @@
 
     // ===================== START =====================
     function onStartClicked() {
+        console.log("Start CLICKED");
         if (!socket || socket.readyState !== WebSocket.OPEN) {
             console.error("[WS] Not connected");
             return;
