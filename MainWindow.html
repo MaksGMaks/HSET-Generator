@@ -289,13 +289,11 @@
         }
 
         const payload = [{
-            type: 1,
-            command: 1,
-            params: {
-                MODE: parseInt(document.getElementById('in-mode').value),
-                SPEED: document.getElementById('in-speed').value,
-                PACK_SIZE: document.getElementById('in-size').value
-            }
+            TYPE: 1,
+            COMMAND: 1,
+            MODE: parseInt(document.getElementById('in-mode').value),
+            SPEED: document.getElementById('in-speed').value,
+            PACK_SIZE: document.getElementById('in-size').value
         }];
 
         socket.send(JSON.stringify(payload));
@@ -306,8 +304,8 @@
         if (!socket || socket.readyState !== WebSocket.OPEN) return;
 
         socket.send(JSON.stringify([{
-            type: 1,
-            command: 4
+            TYPE: 1,
+            COMMAND: 4
         }]));
     }
 
@@ -318,8 +316,8 @@
         const cmd = isPaused ? 3 : 2;
 
         socket.send(JSON.stringify([{
-            type: 1,
-            command: cmd
+            TYPE: 1,
+            COMMAND: cmd
         }]));
     }
 
