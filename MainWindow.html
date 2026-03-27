@@ -171,7 +171,7 @@
 
         const hostClean = targetHost.replace(/^https?:\/\//, '');
         const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-        const connectionUrl = `${wsProtocol}${hostClean}:${targetPort}`;
+        const connectionUrl = `${wsProtocol}${hostClean}`;
 
         console.log("[WS] Connecting:", connectionUrl);
 
