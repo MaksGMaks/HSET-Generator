@@ -291,7 +291,7 @@
 
         const payload = [{
             TYPE: 2,
-            COMMAND: 1,
+            COMMAND: 0,
             MODE: parseInt(document.getElementById('in-mode').value),
             SPEED: document.getElementById('in-speed').value,
             PACK_SIZE: document.getElementById('in-size').value
@@ -308,7 +308,7 @@
 
         socket.send(JSON.stringify([{
             TYPE: 2,
-            COMMAND: 4
+            COMMAND: 3
         }]));
     }
 
@@ -316,7 +316,7 @@
     function onPauseClicked() {
         if (!socket || socket.readyState !== WebSocket.OPEN) return;
 
-        const cmd = isPaused ? 3 : 2;
+        const cmd = isPaused ? 2 : 1;
 
         socket.send(JSON.stringify([{
             TYPE: 2,
