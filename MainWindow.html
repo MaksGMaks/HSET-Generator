@@ -198,20 +198,7 @@
         document.getElementById('val-total').innerText = total;
     }
 
-    // ===== DATA =====
-    function processDataResponse(obj) {
-        if (!isRunning) return;
-
-        const bps = Number(obj["bps"] || 0);
-        const BPS = Number(obj["BPS"] || 0);
-        const pps = Number(obj["pps"] || 0);
-        const total = Number(obj["totalSend"] || 0);
-
-        updateUI(bps, BPS, pps, total);
-        updateChart(bps, BPS);
-    }
-
-    // ===== WS =====
+    // ===================== INIT =====================
     function initConnection() {
         const urlParams = new URLSearchParams(window.location.search);
         let targetHost = urlParams.get('host') || window.location.hostname;
@@ -219,7 +206,7 @@
 
         const hostClean = targetHost.replace(/^https?:\/\//, '');
         const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-        const connectionUrl = `${targetHost}`; // ${wsProtocol}${hostClean}
+        const connectionUrl = `${wsProtocol}${hostClean}`;
 
         console.log("[WS] Connecting:", connectionUrl); //
 
@@ -245,33 +232,153 @@
         };
     }
 
-    function handleMessage(raw) {
-        const obj = JSON.parse(raw);
-        if (obj.type === "ACK") return;
+    // ===================== UI RESET =====================
+    function resetUIState() {
+        const btn = document.getElementById('btn-start');
+        const pauseBtn = document.getElementById('btn-pause');
 
-        if (obj.status === "CONNECTED") {
-            document.getElementById('in-interface').value = obj["InterfaceName"];
+        btn.innerText = "▶ Start";
+        btn.style.background = "var(--primary)";
+        pauseBtn.disabled = true;
+        pauseBtn.innerText = "|| Pause";
+    }
+
+    // ===================== MESSAGE HANDLER =====================
+    function handleMessage(rawData) {
+        try {
+            const json = JSON.parse(rawData);
+            const obj = Array.isArray(json) ? json[0] : json;
+
+            // --- ERROR ---
+            if (obj.error) {
+                alert(obj.error);
+                socket.close();
+                return;
+            }
+
+            // --- HANDSHAKE ---
+            if (obj.status === "CONNECTED") {
+                processInterfaceInfo(obj);
+                isInitialized = true;
+                return;
+            }
+
+            // --- ACK ---
+            if (obj.type === "ACK") {
+                handleAck(obj);
+                return;
+            }
+
+            // --- DATA ---
+            processDataResponse(obj);
+
+        } catch (e) {
+            console.error("[WS] JSON parse error", e);
+        }
+    }
+
+    // ===================== ACK HANDLER =====================
+    function handleAck(obj) {
+        console.log("[ACK]", obj);
+
+        const status = obj.status;
+
+        const btn = document.getElementById('btn-start');
+        const pauseBtn = document.getElementById('btn-pause');
+
+        switch (status) {
+            case "STARTED":
+                isRunning = true;
+                btn.innerText = "■ Stop";
+                btn.style.background = "var(--error)";
+                pauseBtn.disabled = false;
+                break;
+
+            case "STOPPED":
+                isRunning = false;
+                resetUIState();
+                break;
+
+            case "PAUSED":
+                isPaused = true;
+                pauseBtn.innerText = "▶ Resume";
+                break;
+
+            case "RESUMED":
+                isPaused = false;
+                pauseBtn.innerText = "|| Pause";
+                break;
+        }
+    }
+
+    // ===================== START =====================
+    function onStartClicked() {
+        console.log("Start CLICKED");
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+            console.error("[WS] Not connected");
             return;
         }
 
-        processDataResponse(obj);
+        if (isRunning) {
+            stopGenerator();
+            return;
+        }
+
+        const payload = [{
+            TYPE: 2,
+            COMMAND: 0,
+            MODE: parseInt(document.getElementById('in-mode').value),
+            SPEED: document.getElementById('in-speed').value,
+            PACK_SIZE: document.getElementById('in-size').value,
+            BURST_SIZE: document.getElementById('in-burst').value,
+            PACK_PATTERN: document.getElementById('in-pattern').value,
+            COPIES: document.getElementById('in-copies').value,
+            TOTAL_SEND: document.getElementById('in-sent').value
+        }];
+
+        console.log("JSON: ", payload);
+
+        socket.send(JSON.stringify(payload));
     }
 
-    // ===== CONTROL =====
-    function onStartClicked() {
+    // ===================== STOP =====================
+    function stopGenerator() {
         if (!socket || socket.readyState !== WebSocket.OPEN) return;
-
-        isRunning = true;
 
         socket.send(JSON.stringify([{
             TYPE: 2,
-            COMMAND: 0
+            COMMAND: 3
         }]));
     }
 
+    // ===================== PAUSE / RESUME =====================
     function onPauseClicked() {
-        if (!socket) return;
-        socket.send(JSON.stringify([{ TYPE: 2, COMMAND: isPaused ? 2 : 1 }]));
+        if (!socket || socket.readyState !== WebSocket.OPEN) return;
+
+        const cmd = isPaused ? 2 : 1;
+
+        socket.send(JSON.stringify([{
+            TYPE: 2,
+            COMMAND: cmd
+        }]));
+    }
+
+    // ===================== DATA =====================
+    function processDataResponse(obj) {
+        if (!isRunning) return;
+
+        const bps = Number(obj["bps"] || 0);
+        const BPS = Number(obj["BPS"] || 0);
+        const pps = Number(obj["pps"] || 0);
+        const total = Number(obj["totalSend"] || 0);
+
+        updateUI(bps, pps);
+        updateChart(bps);
+
+        const totalEl = document.getElementById('val-total');
+        if (totalEl) {
+            totalEl.innerText = total.toLocaleString();
+        }
     }
 
     // ===== INIT =====
