@@ -16,7 +16,6 @@
             --success: #4caf50;
             --error: #f44336;
             --input-bg: #252525;
-            /* Help Page specific additions */
             --accent-bg: #252525;
             --highlight: #4fc3f7;
             --warning: #ffd54f;
@@ -30,7 +29,6 @@
             --primary: #005fb8;
             --secondary: #e1e1e1;
             --input-bg: #f9f9f9;
-            /* Help Page specific additions */
             --accent-bg: #f8f9fa;
             --highlight: #007acc;
         }
@@ -38,7 +36,6 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { margin: 0; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
 
-        /* Menu Bar */
         nav { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; padding: 0 10px; z-index: 100; }
         .menu-item { position: relative; padding: 10px 15px; cursor: pointer; font-size: 14px; }
         .menu-item:hover { background: var(--secondary); }
@@ -47,10 +44,8 @@
         .dropdown div { padding: 10px; font-size: 13px; }
         .dropdown div:hover { background: var(--primary); color: white; }
 
-        /* Main Layout */
         main { display: grid; grid-template-columns: 380px 1fr; flex: 1; overflow: hidden; position: relative; }
 
-        /* Sidebar / Parameters */
         .sidebar { padding: 20px; border-right: 1px solid var(--border); overflow-y: auto; background: var(--bg); }
         .group-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
         .group-box h3 { margin-top: 0; font-size: 14px; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
@@ -65,20 +60,17 @@
         .btn-pause { background: var(--secondary); color: var(--text); }
         button:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        /* Dashboard */
         .dashboard { padding: 20px; display: flex; flex-direction: column; gap: 20px; background: var(--bg); }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
         .stat-card { background: var(--surface); padding: 15px; border-radius: 8px; border: 1px solid var(--border); text-align: center; }
         .stat-label { font-size: 12px; opacity: 0.7; margin-bottom: 5px; }
         .stat-value { font-size: 22px; font-weight: bold; color: var(--primary); }
 
-        /* Tabs & Charts */
         .tabs { display: flex; gap: 5px; margin-bottom: -1px; }
         .tab { padding: 10px 20px; background: var(--secondary); border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 13px; }
         .tab.active { background: var(--surface); border-bottom: 2px solid var(--primary); font-weight: bold; }
         .chart-area { background: var(--surface); border: 1px solid var(--border); border-radius: 0 8px 8px 8px; flex: 1; padding: 15px; position: relative; }
 
-        /* ================= HELP OVERLAY INTEGRATION ================= */
         #help-overlay { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 500; flex-direction: row; }
         #help-overlay.active { display: flex; }
 
@@ -139,16 +131,16 @@
                 <label id="l-pkt-size">Packet Size:</label>
                 <input type="number" value="16" id="in-size">
 
-                <label>Burst Size:</label>
+                <label id="l-burst">Burst Size:</label>
                 <input type="number" value="1" id="in-burst">
 
-                <label>Copies:</label>
+                <label id="l-copies">Copies:</label>
                 <input type="number" value="0" id="in-copies">
 
-                <label>Sent:</label>
+                <label id="l-sent">Sent:</label>
                 <input type="number" value="0" id="in-sent">
 
-                <label>Packet Pattern:</label>
+                <label id="l-pattern">Packet Pattern:</label>
                 <input type="text" value="AA" maxlength="2" id="in-pattern">
 
                 <label id="l-time">Time:</label>
@@ -191,7 +183,6 @@
 
     <div id="help-overlay">
         <button class="help-close-btn" onclick="toggleHelp()">✖ Close</button>
-
         <div class="help-nav">
             <div class="nav-header" id="nav-header-docs">Documentation</div>
             <a href="#general" id="nav-general" onclick="toggleHelp(false)">General Look</a>
@@ -200,44 +191,39 @@
             <a href="#modes" id="nav-modes" onclick="toggleHelp(false)">Generating Modes</a>
             <a href="#performance" id="nav-performance" onclick="toggleHelp(false)">Performance</a>
         </div>
-
         <div class="help-main">
             <h1 id="main-title">High Speed Traffic Generator</h1>
             <p id="main-desc">Welcome to the official manual. This tool is designed for high-performance network stress testing using DPDK and PF_RING technologies.</p>
-
             <section id="general">
                 <h2 id="title-general">General Look</h2>
                 <p id="desc-general">The application interface is organized into 4 logical zones:</p>
                 <div class="card">
                     <ul id="list-general">
-                        <li><strong>Parameters Block:</strong> Configuration of network interfaces and packet headers.</li>
-                        <li><strong>Info Block:</strong> Real-time statistics and counters.</li>
-                        <li><strong>Graph Block:</strong> Visual representation of throughput (bps/BPS).</li>
-                        <li><strong>Control Block:</strong> Main execution controls (Start, Stop, Pause).</li>
+                        <li><strong>Parameters Block:</strong> Configuration of network interfaces.</li>
+                        <li><strong>Info Block:</strong> Real-time statistics.</li>
+                        <li><strong>Graph Block:</strong> Visual throughput.</li>
+                        <li><strong>Control Block:</strong> Start, Stop, Pause.</li>
                     </ul>
                 </div>
             </section>
-
             <section id="controls">
                 <h2 id="title-controls">Control Block</h2>
                 <p id="desc-controls">Located at the base of the dashboard, this block manages the generator lifecycle.</p>
                 <ul id="list-controls">
-                    <li><strong>Start/Stop:</strong> Toggle traffic generation. Note that parameters are locked while active.</li>
-                    <li><strong>Pause/Resume:</strong> Temporarily halt transmission without resetting counters.</li>
-                    <li><strong>Time Selector:</strong> 00:00:00 for continuous flow, or set a specific countdown.</li>
+                    <li><strong>Start/Stop:</strong> Toggle traffic. Parameters lock while active.</li>
+                    <li><strong>Pause/Resume:</strong> Halt transmission without resetting.</li>
+                    <li><strong>Time Selector:</strong> Set countdown or 0 for infinite.</li>
                 </ul>
             </section>
-
             <section id="parameters">
                 <h2 id="title-parameters">Parameters</h2>
                 <div class="card" id="list-params-details">
                     <p><strong>Interface:</strong> The network device (NIC) used for output.</p>
                     <p><strong>Packet Size:</strong> 16B to 64KB. Smaller packets increase CPU overhead.</p>
-                    <p><strong>Burst Size:</strong> (DPDK/ZC) Number of packets sent per DMA transaction.</p>
+                    <p><strong>Burst Size:</strong> (DPDK/ZC) Packets per DMA transaction.</p>
                     <p><strong>Copies / Sent:</strong> Termination limits. Set to 0 for infinite.</p>
                 </div>
             </section>
-
             <section id="modes">
                 <h2 id="title-modes">Generating Modes</h2>
                 <div class="card">
@@ -248,7 +234,6 @@
                     <p><span class="mode-tag">DPDK</span> <span id="desc-dpdk">Direct hardware access. Requires HugePages and DPDK environment.</span></p>
                 </div>
             </section>
-
             <section id="performance">
                 <div class="note">
                     <h3 id="title-perf">Important Note on Speed</h3>
@@ -260,24 +245,38 @@
 </main>
 
 <script>
-    // ================= HELP & SETTINGS FUNCTIONS =================
-    function toggleHelp(forceState) {
-        const overlay = document.getElementById('help-overlay');
-        if (typeof forceState === "boolean" && forceState === false) {
-            // Keep active when clicking links so navigation works, but you can remove this param check if you want link clicks to close the menu
-            return;
-        }
-        overlay.classList.toggle('active');
+    let chart; // Variable for chart
+
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
     }
 
-    // ================= EXISTING LOGIC =================
+    // MISSING SAVE GRAPH FUNCTION
+    function saveGraph() {
+        const canvas = document.getElementById('mainChart');
+        const link = document.createElement('a');
+        link.download = 'traffic_graph.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    function toggleHelp(forceState) {
+        const overlay = document.getElementById('help-overlay');
+        if (typeof forceState === "boolean") {
+            if(forceState) overlay.classList.add('active');
+            else overlay.classList.remove('active');
+        } else {
+            overlay.classList.toggle('active');
+        }
+    }
+
     let socket = null;
     let isInitialized = false;
     let isRunning = false;
     let isPaused = false;
-
     let currentUnit = "bps";
     let rawHistory = { bps: [], BPS: [] };
+    let initialTimeWasZero = true;
 
     function initChart() {
         const ctx = document.getElementById('mainChart').getContext('2d');
@@ -307,19 +306,12 @@
     }
 
     function updateTimer(backendTime) {
-        if (backendTime <= 0) return;
-
+        if (backendTime <= 0 && isRunning) return;
         let timeInput = document.getElementById('in-time');
         let parts = timeInput.value.split(':').map(Number);
         let seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
-
-        // Logic from Qt: if starting time was 0, it's uptime. Else, it's countdown.
-        if (initialTimeWasZero) {
-            seconds++;
-        } else {
-            seconds = Math.max(0, seconds - 1);
-        }
-
+        if (initialTimeWasZero) seconds++;
+        else seconds = Math.max(0, seconds - 1);
         let h = Math.floor(seconds / 3600).toString().padStart(2, '0');
         let m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
         let s = (seconds % 60).toString().padStart(2, '0');
@@ -327,14 +319,11 @@
     }
 
     function updateChartDisplay() {
-        const dataKey = currentUnit; // 'bps' or 'BPS'
+        if (!chart) return;
+        const dataKey = currentUnit;
         const isBytes = currentUnit === 'BPS';
-
-        // Calculate units based on the latest value to match Qt's rescale logic
         const latest = rawHistory[dataKey][rawHistory[dataKey].length - 1] || 0;
         const formatted = formatSpeed(latest, isBytes);
-
-        // Rescale all visible history to current unit
         const base = isBytes ? 1024 : 1000;
         const units = isBytes ? ['B/s', 'KB/s', 'MB/s', 'GB/s'] : ['bps', 'kbps', 'Mbps', 'Gbps'];
         const unitIndex = units.indexOf(formatted.unit);
@@ -342,237 +331,68 @@
 
         chart.data.datasets[0].label = formatted.unit;
         chart.data.datasets[0].data = rawHistory[dataKey].map(v => v / scaleDivisor);
-
-        // Dynamic Y-Axis rounding logic from Qt (val * 1.5 rounded to nearest power of 10)
         const maxVal = Math.max(...chart.data.datasets[0].data, 1);
         const rawRange = maxVal * 1.5;
         const step = Math.pow(10, Math.floor(Math.log10(rawRange)));
-        chart.options.scales.y.max = Math.ceil(rawRange / step) * step;
-
+        chart.options.scales.y.max = Math.ceil(rawRange / (step || 1)) * (step || 1);
         chart.update();
 
-        // Update Big Stat Card
         document.getElementById('val-speed').innerText = formatted.val;
         document.getElementById('val-unit').innerText = formatted.unit;
     }
 
     function processDataResponse(obj) {
         if (!isRunning) return;
-
         const bps = Number(obj["bps"] || 0);
         const BPS = Number(obj["BPS"] || 0);
-        const pps = Number(obj["pps"] || 0);
-        const total = Number(obj["totalSend"] || 0);
-        const timeVal = Number(obj["time"] || 0);
-
-        // Update History
         rawHistory.bps.push(bps);
         rawHistory.BPS.push(BPS);
-        if (rawHistory.bps.length > 50) {
-            rawHistory.bps.shift();
-            rawHistory.BPS.shift();
-        }
-
+        if (rawHistory.bps.length > 50) { rawHistory.bps.shift(); rawHistory.BPS.shift(); }
         chart.data.labels.push('');
         if (chart.data.labels.length > 50) chart.data.labels.shift();
-
         updateChartDisplay();
-        updateTimer(timeVal);
-
-        document.getElementById('val-pps').innerText = pps.toLocaleString();
-        document.getElementById('val-total').innerText = total.toLocaleString();
+        updateTimer(Number(obj["time"] || 0));
+        document.getElementById('val-pps').innerText = Number(obj["pps"] || 0).toLocaleString();
+        document.getElementById('val-total').innerText = Number(obj["totalSend"] || 0).toLocaleString();
     }
 
-    let initialTimeWasZero = true;
-
-    // ===== UI =====
-    function updateUI(bps, BPS, pps, total) {
-        document.getElementById('val-speed').innerText = bps.toFixed(2);
-        document.getElementById('val-pps').innerText = pps;
-        document.getElementById('val-total').innerText = total;
-    }
-
-    // ===================== INIT =====================
-    function initConnection() {
-        const urlParams = new URLSearchParams(window.location.search);
-        let targetHost = urlParams.get('host') || window.location.hostname;
-        let targetPort = urlParams.get('target_port') || "8080";
-
-        const hostClean = targetHost.replace(/^https?:\/\//, '');
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-        const connectionUrl = `${wsProtocol}${hostClean}`;
-
-        console.log("[WS] Connecting:", connectionUrl); //
-
-        socket = new WebSocket(connectionUrl);
-
-        socket.onopen = () => {
-            console.log("[WS] Connected");
-        };
-
-        socket.onmessage = (event) => {
-            handleMessage(event.data);
-        };
-
-        socket.onclose = () => {
-            console.warn("[WS] Connection closed");
-            isRunning = false;
-            isPaused = false;
-            resetUIState();
-        };
-
-        socket.onerror = (err) => {
-            console.error("[WS] Error:", err);
-        };
-    }
-
-
-    // ===================== PLACEHOLDERS =====================
-    function processInterfaceInfo(obj) {
-        console.log("[INIT]", obj);
-        const interface = document.getElementById('in-interface');
-        interface.value = obj["InterfaceName"];
-        const modesEl = document.getElementById('in-mode');
-        modesEl.innerHTML = ""; // clear previous options
-
-        if (obj.PfRingSupported) {
-            console.log("[INIT] PF_RING SUPPORTED. Setting option");
-            const option = document.createElement("option");
-            option.value = "1";      // backend can parse this
-            option.textContent = "PF_RING";
-            modesEl.appendChild(option);
-        }
-
-        if (obj.PfRingZcSupported) {
-            console.log("[INIT] PF_RING ZC SUPPORTED. Setting option");
-            const option = document.createElement("option");
-            option.value = "2";
-            option.textContent = "PF_RING ZC";
-            modesEl.appendChild(option);
-        }
-
-        if (obj.DpdkSupported) {
-            console.log("[INIT] DPDK SUPPORTED. Setting option");
-            const option = document.createElement("option");
-            option.value = "4";
-            option.textContent = "DPDK";
-            modesEl.appendChild(option);
-        }
-
-        // If nothing supported
-        if (modesEl.options.length === 0) {
-            console.log("[INIT] NONE SUPPORTED. Setting option");
-            const option = document.createElement("option");
-            option.value = "0";
-            option.textContent = "None";
-            modesEl.appendChild(option);
-        }
-    }
-
-    // ===================== UI RESET =====================
-    function resetUIState() {
-        const btn = document.getElementById('btn-start');
-        const pauseBtn = document.getElementById('btn-pause');
-
-        btn.innerText = "▶ Start";
-        btn.style.background = "var(--primary)";
-        pauseBtn.disabled = true;
-        pauseBtn.innerText = "|| Pause";
-    }
-
-    // ===================== MESSAGE HANDLER =====================
     function handleMessage(rawData) {
         try {
             const json = JSON.parse(rawData);
             const obj = Array.isArray(json) ? json[0] : json;
-
-            // --- ERROR ---
-            if (obj.error) {
-                alert(obj.error);
-                socket.close();
-                return;
-            }
-
-            // --- HANDSHAKE ---
-            if (obj.status === "CONNECTED") {
-                processInterfaceInfo(obj);
-                isInitialized = true;
-                return;
-            }
-
-            // --- ACK ---
-            if (obj.type === "ACK") {
-                handleAck(obj);
-                return;
-            }
-
-            // --- DATA ---
+            if (obj.error) { alert(obj.error); socket.close(); return; }
+            if (obj.status === "CONNECTED") { processInterfaceInfo(obj); isInitialized = true; return; }
+            if (obj.type === "ACK") { handleAck(obj); return; }
             processDataResponse(obj);
-
-        } catch (e) {
-            console.error("[WS] JSON parse error", e);
-        }
+        } catch (e) { console.error("[WS] JSON parse error", e); }
     }
 
-    // ===================== ACK HANDLER =====================
     function handleAck(obj) {
-        console.log("[ACK]", obj);
-
         const status = obj.status;
-
         const btn = document.getElementById('btn-start');
         const pauseBtn = document.getElementById('btn-pause');
-
         switch (status) {
             case "STARTED":
-                isRunning = true;
-                btn.innerText = "■ Stop";
-                btn.style.background = "var(--error)";
-                pauseBtn.disabled = false;
-                break;
-
+                isRunning = true; btn.innerText = "■ Stop";
+                btn.style.background = "var(--error)"; pauseBtn.disabled = false; break;
             case "STOPPED":
-                isRunning = false;
-                resetUIState();
-                break;
-
+                isRunning = false; resetUIState(); break;
             case "PAUSED":
-                isPaused = true;
-                pauseBtn.innerText = "▶ Resume";
-                break;
-
+                isPaused = true; pauseBtn.innerText = "▶ Resume"; break;
             case "RESUMED":
-                isPaused = false;
-                pauseBtn.innerText = "|| Pause";
-                break;
+                isPaused = false; pauseBtn.innerText = "|| Pause"; break;
         }
     }
 
-    // ===================== START =====================
     function onStartClicked() {
-        console.log("Start CLICKED");
-        if (!socket || socket.readyState !== WebSocket.OPEN) {
-            console.error("[WS] Not connected");
-            return;
-        }
-
-        if (isRunning) {
-            stopGenerator();
-            return;
-        }
-
+        if (!socket || socket.readyState !== WebSocket.OPEN) return;
+        if (isRunning) { stopGenerator(); return; }
         rawHistory = { bps: [], BPS: [] };
         chart.data.labels = [];
         chart.data.datasets[0].data = [];
-        document.getElementById('val-total').innerText = "0";
-        document.getElementById('val-pps').innerText = "0";
-
-        const timeVal = document.getElementById('in-time').value;
-        initialTimeWasZero = (timeVal === "00:00:00");
-
-        const payload = [{
-            TYPE: 2,
-            COMMAND: 0,
+        initialTimeWasZero = (document.getElementById('in-time').value === "00:00:00");
+        socket.send(JSON.stringify([{
+            TYPE: 2, COMMAND: 0,
             MODE: parseInt(document.getElementById('in-mode').value),
             SPEED: document.getElementById('in-speed').value,
             PACK_SIZE: document.getElementById('in-size').value,
@@ -580,47 +400,42 @@
             PACK_PATTERN: document.getElementById('in-pattern').value,
             COPIES: document.getElementById('in-copies').value,
             TOTAL_SEND: document.getElementById('in-sent').value
-        }];
-
-        console.log("JSON: ", payload);
-
-        socket.send(JSON.stringify(payload));
+        }]));
     }
 
-    // ===================== STOP =====================
     function stopGenerator() {
-        if (!socket || socket.readyState !== WebSocket.OPEN) return;
-
-        socket.send(JSON.stringify([{
-            TYPE: 2,
-            COMMAND: 3
-        }]));
+        if (socket) socket.send(JSON.stringify([{ TYPE: 2, COMMAND: 3 }]));
     }
 
-    // ===================== PAUSE / RESUME =====================
     function onPauseClicked() {
-        if (!socket || socket.readyState !== WebSocket.OPEN) return;
-
-        const cmd = isPaused ? 2 : 1;
-
-        socket.send(JSON.stringify([{
-            TYPE: 2,
-            COMMAND: cmd
-        }]));
+        if (socket) socket.send(JSON.stringify([{ TYPE: 2, COMMAND: isPaused ? 2 : 1 }]));
     }
 
-    let currentLang = 'en';
+    function resetUIState() {
+        document.getElementById('btn-start').innerText = "▶ Start";
+        document.getElementById('btn-start').style.background = "var(--primary)";
+        document.getElementById('btn-pause').disabled = true;
+        document.getElementById('btn-pause').innerText = "|| Pause";
+    }
+
+    function processInterfaceInfo(obj) {
+        const modesEl = document.getElementById('in-mode');
+        document.getElementById('in-interface').value = obj["InterfaceName"];
+        modesEl.innerHTML = "";
+        if (obj.PfRingSupported) modesEl.add(new Option("PF_RING", "1"));
+        if (obj.PfRingZcSupported) modesEl.add(new Option("PF_RING ZC", "2"));
+        if (obj.DpdkSupported) modesEl.add(new Option("DPDK", "4"));
+        if (modesEl.options.length === 0) modesEl.add(new Option("None", "0"));
+    }
+
     const translations = {
         en: {
-            // Main Window
             mFile: "File", mSettings: "Settings", mHelp: "Help",
             tParams: "Parameters", lInterface: "Interface:", lMode: "Mode:",
             lSpeed: "Pref. Speed:", lPktSize: "Packet Size:", lBurst: "Burst Size:",
             lCopies: "Copies:", lSent: "Sent:", lPattern: "Packet Pattern:", lTime: "Time:",
             btnStart: "▶ Start", btnPause: "|| Pause", btnStop: "■ Stop", btnResume: "▶ Resume",
             statSpeed: "Current Speed", statTotal: "Total Sent",
-
-            // Help Overlay
             navDocs: "Documentation", navGeneral: "General Look", navControls: "Control Block",
             navParams: "Parameters", navModes: "Generating Modes", navPerf: "Performance",
             mainTitle: "High Speed Traffic Generator",
@@ -636,15 +451,12 @@
             descPerf: "Preferred speed is a target. Real-world output may be lower due to hardware limits, small packet overhead, or kernel latency."
         },
         uk: {
-            // Main Window
             mFile: "Файл", mSettings: "Налаштування", mHelp: "Довідка",
             tParams: "Параметри", lInterface: "Інтерфейс:", lMode: "Режим:",
             lSpeed: "Бажана швидкість:", lPktSize: "Розмір пакета:", lBurst: "Розмір порції (Burst):",
             lCopies: "Копії:", lSent: "Надіслано:", lPattern: "Патерн пакета:", lTime: "Час:",
             btnStart: "▶ Старт", btnPause: "|| Пауза", btnStop: "■ Стоп", btnResume: "▶ Відновити",
             statSpeed: "Поточна швидкість", statTotal: "Всього надіслано",
-
-            // Help Overlay
             navDocs: "Документація", navGeneral: "Загальний вигляд", navControls: "Блок керування",
             navParams: "Параметри", navModes: "Режими генерації", navPerf: "Продуктивність",
             mainTitle: "Високошвидкісний Генератор Трафіку",
@@ -665,12 +477,12 @@
         const t = translations[lang];
         if(!t) return;
 
-        // Translate Main Window Menu (using firstChild to protect dropdown menus)
+        // Menu
         document.getElementById('m-file').firstChild.textContent = t.mFile + " ";
         document.getElementById('m-settings').firstChild.textContent = t.mSettings + " ";
         document.getElementById('m-help').textContent = t.mHelp;
 
-        // Translate Sidebar
+        // Sidebar
         document.getElementById('t-params').innerText = t.tParams;
         document.getElementById('l-interface').innerText = t.lInterface;
         document.getElementById('l-mode').innerText = t.lMode;
@@ -682,20 +494,17 @@
         document.getElementById('l-pattern').innerText = t.lPattern;
         document.getElementById('l-time').innerText = t.lTime;
 
-        // Translate Dashboard Stats
+        // Buttons
+        const btnStart = document.getElementById('btn-start');
+        const btnPause = document.getElementById('btn-pause');
+        btnStart.innerText = isRunning ? t.btnStop : t.btnStart;
+        btnPause.innerText = isPaused ? t.btnResume : t.btnPause;
+
+        // Stats
         document.getElementById('l-stat-speed').innerText = t.statSpeed;
         document.getElementById('l-stat-total').innerText = t.statTotal;
 
-        // Translate Buttons (Checking state so we don't overwrite Play/Stop incorrectly)
-        const btnStart = document.getElementById('btn-start');
-        const btnPause = document.getElementById('btn-pause');
-        if (!isRunning) btnStart.innerText = t.btnStart;
-        else btnStart.innerText = t.btnStop;
-
-        if (isPaused) btnPause.innerText = t.btnResume;
-        else btnPause.innerText = t.btnPause;
-
-        // Translate Help Overlay Elements
+        // Help
         document.getElementById('nav-header-docs').innerText = t.navDocs;
         document.getElementById('nav-general').innerText = t.navGeneral;
         document.getElementById('nav-controls').innerText = t.navControls;
@@ -719,27 +528,9 @@
         document.getElementById('desc-perf').innerText = t.descPerf;
     }
 
-    function setTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        chart.options.scales.x.ticks.color = theme === 'dark' ? '#888' : '#444';
-        chart.options.scales.y.ticks.color = theme === 'dark' ? '#888' : '#444';
-        chart.update();
-    }
-    function saveGraph() {
-        const canvas = document.getElementById('mainChart');
-        if (!canvas) return;
-
-        // Create a temporary link element
-        const link = document.createElement('a');
-        link.download = 'traffic_graph.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-    }
-
-    // ===================== INIT CALL =====================
     window.onload = () => {
-        initConnection();
         initChart();
+        // initConnection(); // Uncomment this for real use
     };
 </script>
 
