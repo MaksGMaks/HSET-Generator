@@ -291,25 +291,30 @@
         interface.value = obj["InterfaceName"];
         const modesEl = document.getElementById('in-mode');
         modesEl.innerHTML = "";
-        if(obj["PfRingSupported"] === true) {
+        if(obj["PfRingSupported"]) {
             const option = document.createElement("pf_ring_s");
             option.value = 1;      // or mode if backend expects string
             option.textContent = "PF_RING";
             modesEl.appendChild(option);
         }
-        if(obj["PfRingZcSupported"] === true) {
+        if(obj["PfRingZcSupported"]) {
             const option = document.createElement("pf_ring_zc_s");
             option.value = 2;      // or mode if backend expects string
             option.textContent = "PF_RING_ZC";
             modesEl.appendChild(option);
         }
-        if(obj["DpdkSupported"] === true) {
+        if(obj["DpdkSupported"]) {
             const option = document.createElement("dpdk");
             option.value = 4;      // or mode if backend expects string
             option.textContent = "DPDK";
             modesEl.appendChild(option);
         }
-
+        if (modesEl.options.length === 0) {
+            const option = document.createElement("none_mode");
+            option.value = 0;      // or mode if backend expects string
+            option.textContent = "None";
+            modesEl.appendChild(option);
+        }
 
         // fill UI if needed
     }
