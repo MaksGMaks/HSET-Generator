@@ -270,69 +270,6 @@
         overlay.classList.toggle('active');
     }
 
-    function setTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-    }
-
-    const translations = {
-        en: {
-            navDocs: "Documentation", navGeneral: "General Look", navControls: "Control Block",
-            navParams: "Parameters", navModes: "Generating Modes", navPerf: "Performance",
-            mainTitle: "High Speed Traffic Generator",
-            mainDesc: "Welcome to the official manual. This tool is designed for high-performance network stress testing using DPDK and PF_RING technologies.",
-            titleGeneral: "General Look", descGeneral: "The application interface is organized into 4 logical zones:",
-            listGeneral: `<li><strong>Parameters Block:</strong> Configuration of network interfaces.</li><li><strong>Info Block:</strong> Real-time statistics.</li><li><strong>Graph Block:</strong> Visual throughput.</li><li><strong>Control Block:</strong> Start, Stop, Pause.</li>`,
-            titleControls: "Control Block", descControls: "Located at the base of the dashboard, this block manages the generator lifecycle.",
-            listControls: `<li><strong>Start/Stop:</strong> Toggle traffic. Parameters lock while active.</li><li><strong>Pause/Resume:</strong> Halt transmission without resetting.</li><li><strong>Time Selector:</strong> Set countdown or 0 for infinite.</li>`,
-            titleParams: "Parameters",
-            paramsDetails: `<p><strong>Interface:</strong> The network device (NIC) used for output.</p><p><strong>Packet Size:</strong> 16B to 64KB. Smaller packets increase CPU overhead.</p><p><strong>Burst Size:</strong> (DPDK/ZC) Packets per DMA transaction.</p><p><strong>Copies / Sent:</strong> Termination limits. Set to 0 for infinite.</p>`,
-            descPfStd: "Uses default PF_RING sockets. Requires pfring.ko module.", descPfZc: "Zero Copy mode. Bypasses kernel. Requires specific ZC drivers.",
-            descDpdk: "Direct hardware access. Requires HugePages and DPDK environment.", titlePerf: "Important Note on Speed",
-            descPerf: "Preferred speed is a target. Real-world output may be lower due to hardware limits, small packet overhead, or kernel latency."
-        },
-        uk: {
-            navDocs: "Документація", navGeneral: "Загальний вигляд", navControls: "Блок керування",
-            navParams: "Параметри", navModes: "Режими генерації", navPerf: "Продуктивність",
-            mainTitle: "Високошвидкісний Генератор Трафіку",
-            mainDesc: "Ласкаво просимо до офіційного посібника. Цей інструмент розроблений для тестування мереж за допомогою технологій DPDK та PF_RING.",
-            titleGeneral: "Загальний вигляд", descGeneral: "Інтерфейс програми організований у 4 логічні зони:",
-            listGeneral: `<li><strong>Блок параметрів:</strong> Конфігурація мережевих інтерфейсів.</li><li><strong>Блок інформації:</strong> Статистика в реальному часі.</li><li><strong>Блок графіка:</strong> Візуалізація пропускної здатності.</li><li><strong>Блок керування:</strong> Старт, Стоп, Пауза.</li>`,
-            titleControls: "Блок керування", descControls: "Цей блок керує життєвим циклом генератора.",
-            listControls: `<li><strong>Старт/Стоп:</strong> Перемикання генерації. Параметри блокуються під час роботи.</li><li><strong>Пауза/Відновити:</strong> Тимчасова зупинка без скидання лічильників.</li><li><strong>Селектор часу:</strong> Встановіть зворотний відлік або 0 для нескінченності.</li>`,
-            titleParams: "Параметри",
-            paramsDetails: `<p><strong>Інтерфейс:</strong> Мережевий пристрій (NIC) для виводу.</p><p><strong>Розмір пакета:</strong> від 16B до 64KB. Менші пакети збільшують навантаження на CPU.</p><p><strong>Розмір порції (Burst):</strong> (DPDK/ZC) Кількість пакетів за одну транзакцію DMA.</p><p><strong>Копії / Надіслано:</strong> Ліміти завершення. 0 — для нескінченної генерації.</p>`,
-            descPfStd: "Використовує стандартні сокети PF_RING. Потребує модуль pfring.ko.", descPfZc: "Режим Zero Copy. Обходить ядро. Потребує спеціальні ZC драйвери.",
-            descDpdk: "Прямий доступ до заліза. Потребує HugePages та налаштування середовища DPDK.", titlePerf: "Важливе зауваження щодо швидкості",
-            descPerf: "Бажана швидкість є цільовою. Реальна швидкість може бути нижчою через апаратні обмеження або накладні витрати на малі пакети."
-        }
-    };
-
-    function setLanguage(lang) {
-        const t = translations[lang];
-        if(!t) return;
-        document.getElementById('nav-header-docs').innerText = t.navDocs;
-        document.getElementById('nav-general').innerText = t.navGeneral;
-        document.getElementById('nav-controls').innerText = t.navControls;
-        document.getElementById('nav-parameters').innerText = t.navParams;
-        document.getElementById('nav-modes').innerText = t.navModes;
-        document.getElementById('nav-performance').innerText = t.navPerf;
-        document.getElementById('main-title').innerText = t.mainTitle;
-        document.getElementById('main-desc').innerText = t.mainDesc;
-        document.getElementById('title-general').innerText = t.titleGeneral;
-        document.getElementById('desc-general').innerText = t.descGeneral;
-        document.getElementById('list-general').innerHTML = t.listGeneral;
-        document.getElementById('title-controls').innerText = t.titleControls;
-        document.getElementById('desc-controls').innerText = t.descControls;
-        document.getElementById('list-controls').innerHTML = t.listControls;
-        document.getElementById('title-parameters').innerText = t.titleParams;
-        document.getElementById('list-params-details').innerHTML = t.paramsDetails;
-        document.getElementById('desc-pf-std').innerText = t.descPfStd;
-        document.getElementById('desc-pf-zc').innerText = t.descPfZc;
-        document.getElementById('desc-dpdk').innerText = t.descDpdk;
-        document.getElementById('title-perf').innerText = t.titlePerf;
-        document.getElementById('desc-perf').innerText = t.descPerf;
-    }
-
     // ================= EXISTING LOGIC =================
     let socket = null;
     let isInitialized = false;
@@ -341,7 +278,6 @@
 
     let currentUnit = "bps";
     let rawHistory = { bps: [], BPS: [] };
-    let chart;
 
     function initChart() {
         const ctx = document.getElementById('mainChart').getContext('2d');
@@ -351,9 +287,6 @@
             options: { animation: false, responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { beginAtZero: true } } }
         });
     }
-
-    // Automatically init chart on load
-    window.onload = () => { initChart(); };
 
     function formatSpeed(value, isBytes) {
         const base = isBytes ? 1024 : 1000;
@@ -380,6 +313,7 @@
         let parts = timeInput.value.split(':').map(Number);
         let seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
 
+        // Logic from Qt: if starting time was 0, it's uptime. Else, it's countdown.
         if (initialTimeWasZero) {
             seconds++;
         } else {
@@ -393,13 +327,14 @@
     }
 
     function updateChartDisplay() {
-        if(!chart) return;
-        const dataKey = currentUnit;
+        const dataKey = currentUnit; // 'bps' or 'BPS'
         const isBytes = currentUnit === 'BPS';
 
+        // Calculate units based on the latest value to match Qt's rescale logic
         const latest = rawHistory[dataKey][rawHistory[dataKey].length - 1] || 0;
         const formatted = formatSpeed(latest, isBytes);
 
+        // Rescale all visible history to current unit
         const base = isBytes ? 1024 : 1000;
         const units = isBytes ? ['B/s', 'KB/s', 'MB/s', 'GB/s'] : ['bps', 'kbps', 'Mbps', 'Gbps'];
         const unitIndex = units.indexOf(formatted.unit);
@@ -408,6 +343,7 @@
         chart.data.datasets[0].label = formatted.unit;
         chart.data.datasets[0].data = rawHistory[dataKey].map(v => v / scaleDivisor);
 
+        // Dynamic Y-Axis rounding logic from Qt (val * 1.5 rounded to nearest power of 10)
         const maxVal = Math.max(...chart.data.datasets[0].data, 1);
         const rawRange = maxVal * 1.5;
         const step = Math.pow(10, Math.floor(Math.log10(rawRange)));
@@ -415,6 +351,7 @@
 
         chart.update();
 
+        // Update Big Stat Card
         document.getElementById('val-speed').innerText = formatted.val;
         document.getElementById('val-unit').innerText = formatted.unit;
     }
@@ -428,6 +365,7 @@
         const total = Number(obj["totalSend"] || 0);
         const timeVal = Number(obj["time"] || 0);
 
+        // Update History
         rawHistory.bps.push(bps);
         rawHistory.BPS.push(BPS);
         if (rawHistory.bps.length > 50) {
@@ -447,12 +385,14 @@
 
     let initialTimeWasZero = true;
 
+    // ===== UI =====
     function updateUI(bps, BPS, pps, total) {
         document.getElementById('val-speed').innerText = bps.toFixed(2);
         document.getElementById('val-pps').innerText = pps;
         document.getElementById('val-total').innerText = total;
     }
 
+    // ===================== INIT =====================
     function initConnection() {
         const urlParams = new URLSearchParams(window.location.search);
         let targetHost = urlParams.get('host') || window.location.hostname;
@@ -462,36 +402,49 @@
         const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
         const connectionUrl = `${wsProtocol}${hostClean}`;
 
-        console.log("[WS] Connecting:", connectionUrl);
+        console.log("[WS] Connecting:", connectionUrl); //
 
         socket = new WebSocket(connectionUrl);
 
-        socket.onopen = () => { console.log("[WS] Connected"); };
-        socket.onmessage = (event) => { handleMessage(event.data); };
+        socket.onopen = () => {
+            console.log("[WS] Connected");
+        };
+
+        socket.onmessage = (event) => {
+            handleMessage(event.data);
+        };
+
         socket.onclose = () => {
             console.warn("[WS] Connection closed");
             isRunning = false;
             isPaused = false;
             resetUIState();
         };
-        socket.onerror = (err) => { console.error("[WS] Error:", err); };
+
+        socket.onerror = (err) => {
+            console.error("[WS] Error:", err);
+        };
     }
 
+
+    // ===================== PLACEHOLDERS =====================
     function processInterfaceInfo(obj) {
         console.log("[INIT]", obj);
         const interface = document.getElementById('in-interface');
         interface.value = obj["InterfaceName"];
         const modesEl = document.getElementById('in-mode');
-        modesEl.innerHTML = "";
+        modesEl.innerHTML = ""; // clear previous options
 
         if (obj.PfRingSupported) {
+            console.log("[INIT] PF_RING SUPPORTED. Setting option");
             const option = document.createElement("option");
-            option.value = "1";
+            option.value = "1";      // backend can parse this
             option.textContent = "PF_RING";
             modesEl.appendChild(option);
         }
 
         if (obj.PfRingZcSupported) {
+            console.log("[INIT] PF_RING ZC SUPPORTED. Setting option");
             const option = document.createElement("option");
             option.value = "2";
             option.textContent = "PF_RING ZC";
@@ -499,13 +452,16 @@
         }
 
         if (obj.DpdkSupported) {
+            console.log("[INIT] DPDK SUPPORTED. Setting option");
             const option = document.createElement("option");
             option.value = "4";
             option.textContent = "DPDK";
             modesEl.appendChild(option);
         }
 
+        // If nothing supported
         if (modesEl.options.length === 0) {
+            console.log("[INIT] NONE SUPPORTED. Setting option");
             const option = document.createElement("option");
             option.value = "0";
             option.textContent = "None";
@@ -513,6 +469,7 @@
         }
     }
 
+    // ===================== UI RESET =====================
     function resetUIState() {
         const btn = document.getElementById('btn-start');
         const pauseBtn = document.getElementById('btn-pause');
@@ -523,37 +480,46 @@
         pauseBtn.innerText = "|| Pause";
     }
 
+    // ===================== MESSAGE HANDLER =====================
     function handleMessage(rawData) {
         try {
             const json = JSON.parse(rawData);
             const obj = Array.isArray(json) ? json[0] : json;
 
+            // --- ERROR ---
             if (obj.error) {
                 alert(obj.error);
                 socket.close();
                 return;
             }
 
+            // --- HANDSHAKE ---
             if (obj.status === "CONNECTED") {
                 processInterfaceInfo(obj);
                 isInitialized = true;
                 return;
             }
 
+            // --- ACK ---
             if (obj.type === "ACK") {
                 handleAck(obj);
                 return;
             }
 
+            // --- DATA ---
             processDataResponse(obj);
+
         } catch (e) {
             console.error("[WS] JSON parse error", e);
         }
     }
 
+    // ===================== ACK HANDLER =====================
     function handleAck(obj) {
         console.log("[ACK]", obj);
+
         const status = obj.status;
+
         const btn = document.getElementById('btn-start');
         const pauseBtn = document.getElementById('btn-pause');
 
@@ -564,14 +530,17 @@
                 btn.style.background = "var(--error)";
                 pauseBtn.disabled = false;
                 break;
+
             case "STOPPED":
                 isRunning = false;
                 resetUIState();
                 break;
+
             case "PAUSED":
                 isPaused = true;
                 pauseBtn.innerText = "▶ Resume";
                 break;
+
             case "RESUMED":
                 isPaused = false;
                 pauseBtn.innerText = "|| Pause";
@@ -579,6 +548,7 @@
         }
     }
 
+    // ===================== START =====================
     function onStartClicked() {
         console.log("Start CLICKED");
         if (!socket || socket.readyState !== WebSocket.OPEN) {
@@ -587,9 +557,190 @@
         }
 
         if (isRunning) {
-            // Logic for stopping goes here
+            stopGenerator();
+            return;
         }
+
+        rawHistory = { bps: [], BPS: [] };
+        chart.data.labels = [];
+        chart.data.datasets[0].data = [];
+        document.getElementById('val-total').innerText = "0";
+        document.getElementById('val-pps').innerText = "0";
+
+        const timeVal = document.getElementById('in-time').value;
+        initialTimeWasZero = (timeVal === "00:00:00");
+
+        const payload = [{
+            TYPE: 2,
+            COMMAND: 0,
+            MODE: parseInt(document.getElementById('in-mode').value),
+            SPEED: document.getElementById('in-speed').value,
+            PACK_SIZE: document.getElementById('in-size').value,
+            BURST_SIZE: document.getElementById('in-burst').value,
+            PACK_PATTERN: document.getElementById('in-pattern').value,
+            COPIES: document.getElementById('in-copies').value,
+            TOTAL_SEND: document.getElementById('in-sent').value
+        }];
+
+        console.log("JSON: ", payload);
+
+        socket.send(JSON.stringify(payload));
     }
+
+    // ===================== STOP =====================
+    function stopGenerator() {
+        if (!socket || socket.readyState !== WebSocket.OPEN) return;
+
+        socket.send(JSON.stringify([{
+            TYPE: 2,
+            COMMAND: 3
+        }]));
+    }
+
+    // ===================== PAUSE / RESUME =====================
+    function onPauseClicked() {
+        if (!socket || socket.readyState !== WebSocket.OPEN) return;
+
+        const cmd = isPaused ? 2 : 1;
+
+        socket.send(JSON.stringify([{
+            TYPE: 2,
+            COMMAND: cmd
+        }]));
+    }
+
+    let currentLang = 'en';
+    const translations = {
+        en: {
+            // Main Window
+            mFile: "File", mSettings: "Settings", mHelp: "Help",
+            tParams: "Parameters", lInterface: "Interface:", lMode: "Mode:",
+            lSpeed: "Pref. Speed:", lPktSize: "Packet Size:", lBurst: "Burst Size:",
+            lCopies: "Copies:", lSent: "Sent:", lPattern: "Packet Pattern:", lTime: "Time:",
+            btnStart: "▶ Start", btnPause: "|| Pause", btnStop: "■ Stop", btnResume: "▶ Resume",
+            statSpeed: "Current Speed", statTotal: "Total Sent",
+
+            // Help Overlay
+            navDocs: "Documentation", navGeneral: "General Look", navControls: "Control Block",
+            navParams: "Parameters", navModes: "Generating Modes", navPerf: "Performance",
+            mainTitle: "High Speed Traffic Generator",
+            mainDesc: "Welcome to the official manual. This tool is designed for high-performance network stress testing using DPDK and PF_RING technologies.",
+            titleGeneral: "General Look", descGeneral: "The application interface is organized into 4 logical zones:",
+            listGeneral: `<li><strong>Parameters Block:</strong> Configuration of network interfaces.</li><li><strong>Info Block:</strong> Real-time statistics.</li><li><strong>Graph Block:</strong> Visual throughput.</li><li><strong>Control Block:</strong> Start, Stop, Pause.</li>`,
+            titleControls: "Control Block", descControls: "Located at the base of the dashboard, this block manages the generator lifecycle.",
+            listControls: `<li><strong>Start/Stop:</strong> Toggle traffic. Parameters lock while active.</li><li><strong>Pause/Resume:</strong> Halt transmission without resetting.</li><li><strong>Time Selector:</strong> Set countdown or 0 for infinite.</li>`,
+            titleParams: "Parameters",
+            paramsDetails: `<p><strong>Interface:</strong> The network device (NIC) used for output.</p><p><strong>Packet Size:</strong> 16B to 64KB. Smaller packets increase CPU overhead.</p><p><strong>Burst Size:</strong> (DPDK/ZC) Packets per DMA transaction.</p><p><strong>Copies / Sent:</strong> Termination limits. Set to 0 for infinite.</p>`,
+            descPfStd: "Uses default PF_RING sockets. Requires pfring.ko module.", descPfZc: "Zero Copy mode. Bypasses kernel. Requires specific ZC drivers.",
+            descDpdk: "Direct hardware access. Requires HugePages and DPDK environment.", titlePerf: "Important Note on Speed",
+            descPerf: "Preferred speed is a target. Real-world output may be lower due to hardware limits, small packet overhead, or kernel latency."
+        },
+        uk: {
+            // Main Window
+            mFile: "Файл", mSettings: "Налаштування", mHelp: "Довідка",
+            tParams: "Параметри", lInterface: "Інтерфейс:", lMode: "Режим:",
+            lSpeed: "Бажана швидкість:", lPktSize: "Розмір пакета:", lBurst: "Розмір порції (Burst):",
+            lCopies: "Копії:", lSent: "Надіслано:", lPattern: "Патерн пакета:", lTime: "Час:",
+            btnStart: "▶ Старт", btnPause: "|| Пауза", btnStop: "■ Стоп", btnResume: "▶ Відновити",
+            statSpeed: "Поточна швидкість", statTotal: "Всього надіслано",
+
+            // Help Overlay
+            navDocs: "Документація", navGeneral: "Загальний вигляд", navControls: "Блок керування",
+            navParams: "Параметри", navModes: "Режими генерації", navPerf: "Продуктивність",
+            mainTitle: "Високошвидкісний Генератор Трафіку",
+            mainDesc: "Ласкаво просимо до офіційного посібника. Цей інструмент розроблений для тестування мереж за допомогою технологій DPDK та PF_RING.",
+            titleGeneral: "Загальний вигляд", descGeneral: "Інтерфейс програми організований у 4 логічні зони:",
+            listGeneral: `<li><strong>Блок параметрів:</strong> Конфігурація мережевих інтерфейсів.</li><li><strong>Блок інформації:</strong> Статистика в реальному часі.</li><li><strong>Блок графіка:</strong> Візуалізація пропускної здатності.</li><li><strong>Блок керування:</strong> Старт, Стоп, Пауза.</li>`,
+            titleControls: "Блок керування", descControls: "Цей блок керує життєвим циклом генератора.",
+            listControls: `<li><strong>Старт/Стоп:</strong> Перемикання генерації. Параметри блокуються під час роботи.</li><li><strong>Пауза/Відновити:</strong> Тимчасова зупинка без скидання лічильників.</li><li><strong>Селектор часу:</strong> Встановіть зворотний відлік або 0 для нескінченності.</li>`,
+            titleParams: "Параметри",
+            paramsDetails: `<p><strong>Інтерфейс:</strong> Мережевий пристрій (NIC) для виводу.</p><p><strong>Розмір пакета:</strong> від 16B до 64KB. Менші пакети збільшують навантаження на CPU.</p><p><strong>Розмір порції (Burst):</strong> (DPDK/ZC) Кількість пакетів за одну транзакцію DMA.</p><p><strong>Копії / Надіслано:</strong> Ліміти завершення. 0 — для нескінченної генерації.</p>`,
+            descPfStd: "Використовує стандартні сокети PF_RING. Потребує модуль pfring.ko.", descPfZc: "Режим Zero Copy. Обходить ядро. Потребує спеціальні ZC драйвери.",
+            descDpdk: "Прямий доступ до заліза. Потребує HugePages та налаштування середовища DPDK.", titlePerf: "Важливе зауваження щодо швидкості",
+            descPerf: "Бажана швидкість є цільовою. Реальна швидкість може бути нижчою через апаратні обмеження або накладні витрати на малі пакети."
+        }
+    };
+
+    function setLanguage(lang) {
+        const t = translations[lang];
+        if(!t) return;
+
+        // Translate Main Window Menu (using firstChild to protect dropdown menus)
+        document.getElementById('m-file').firstChild.textContent = t.mFile + " ";
+        document.getElementById('m-settings').firstChild.textContent = t.mSettings + " ";
+        document.getElementById('m-help').textContent = t.mHelp;
+
+        // Translate Sidebar
+        document.getElementById('t-params').innerText = t.tParams;
+        document.getElementById('l-interface').innerText = t.lInterface;
+        document.getElementById('l-mode').innerText = t.lMode;
+        document.getElementById('l-speed').innerText = t.lSpeed;
+        document.getElementById('l-pkt-size').innerText = t.lPktSize;
+        document.getElementById('l-burst').innerText = t.lBurst;
+        document.getElementById('l-copies').innerText = t.lCopies;
+        document.getElementById('l-sent').innerText = t.lSent;
+        document.getElementById('l-pattern').innerText = t.lPattern;
+        document.getElementById('l-time').innerText = t.lTime;
+
+        // Translate Dashboard Stats
+        document.getElementById('l-stat-speed').innerText = t.statSpeed;
+        document.getElementById('l-stat-total').innerText = t.statTotal;
+
+        // Translate Buttons (Checking state so we don't overwrite Play/Stop incorrectly)
+        const btnStart = document.getElementById('btn-start');
+        const btnPause = document.getElementById('btn-pause');
+        if (!isRunning) btnStart.innerText = t.btnStart;
+        else btnStart.innerText = t.btnStop;
+
+        if (isPaused) btnPause.innerText = t.btnResume;
+        else btnPause.innerText = t.btnPause;
+
+        // Translate Help Overlay Elements
+        document.getElementById('nav-header-docs').innerText = t.navDocs;
+        document.getElementById('nav-general').innerText = t.navGeneral;
+        document.getElementById('nav-controls').innerText = t.navControls;
+        document.getElementById('nav-parameters').innerText = t.navParams;
+        document.getElementById('nav-modes').innerText = t.navModes;
+        document.getElementById('nav-performance').innerText = t.navPerf;
+        document.getElementById('main-title').innerText = t.mainTitle;
+        document.getElementById('main-desc').innerText = t.mainDesc;
+        document.getElementById('title-general').innerText = t.titleGeneral;
+        document.getElementById('desc-general').innerText = t.descGeneral;
+        document.getElementById('list-general').innerHTML = t.listGeneral;
+        document.getElementById('title-controls').innerText = t.titleControls;
+        document.getElementById('desc-controls').innerText = t.descControls;
+        document.getElementById('list-controls').innerHTML = t.listControls;
+        document.getElementById('title-parameters').innerText = t.titleParams;
+        document.getElementById('list-params-details').innerHTML = t.paramsDetails;
+        document.getElementById('desc-pf-std').innerText = t.descPfStd;
+        document.getElementById('desc-pf-zc').innerText = t.descPfZc;
+        document.getElementById('desc-dpdk').innerText = t.descDpdk;
+        document.getElementById('title-perf').innerText = t.titlePerf;
+        document.getElementById('desc-perf').innerText = t.descPerf;
+    }
+
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        chart.options.scales.x.ticks.color = theme === 'dark' ? '#888' : '#444';
+        chart.options.scales.y.ticks.color = theme === 'dark' ? '#888' : '#444';
+        chart.update();
+    }
+    function saveGraph() {
+        const canvas = document.getElementById('mainChart');
+        if (!canvas) return;
+
+        // Create a temporary link element
+        const link = document.createElement('a');
+        link.download = 'traffic_graph.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    // ===================== INIT CALL =====================
+    window.onload = () => {
+        initConnection();
+        initChart();
+    };
 </script>
 
 </body>
