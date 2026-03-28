@@ -31,95 +31,67 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { margin: 0; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
 
-        /* Menu Bar */
         nav { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; padding: 0 10px; z-index: 100; }
         .menu-item { position: relative; padding: 10px 15px; cursor: pointer; font-size: 14px; }
         .menu-item:hover { background: var(--secondary); }
-        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--surface); border: 1px solid var(--border); min-width: 160px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--surface); border: 1px solid var(--border); min-width: 160px; }
         .menu-item:hover .dropdown { display: block; }
-        .dropdown div { padding: 10px; font-size: 13px; }
-        .dropdown div:hover { background: var(--primary); color: white; }
 
-        /* Main Layout */
         main { display: grid; grid-template-columns: 380px 1fr; flex: 1; overflow: hidden; }
-        
-        /* Sidebar / Parameters */
-        .sidebar { padding: 20px; border-right: 1px solid var(--border); overflow-y: auto; background: var(--bg); }
-        .group-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
-        .group-box h3 { margin-top: 0; font-size: 14px; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+        .sidebar { padding: 20px; border-right: 1px solid var(--border); overflow-y: auto; }
+        .group-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 15px; }
 
         .form-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 12px; align-items: center; }
-        label { font-size: 13px; font-weight: 600; }
         input, select { background: var(--input-bg); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: 4px; width: 100%; }
-        
+
         .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        button { padding: 10px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button { padding: 10px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
         .btn-start { background: var(--primary); color: white; }
         .btn-pause { background: var(--secondary); color: var(--text); }
-        button:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        /* Dashboard */
-        .dashboard { padding: 20px; display: flex; flex-direction: column; gap: 20px; background: var(--bg); }
+        .dashboard { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
         .stat-card { background: var(--surface); padding: 15px; border-radius: 8px; border: 1px solid var(--border); text-align: center; }
-        .stat-label { font-size: 12px; opacity: 0.7; margin-bottom: 5px; }
-        .stat-value { font-size: 22px; font-weight: bold; color: var(--primary); }
 
-        /* Tabs & Charts */
-        .tabs { display: flex; gap: 5px; margin-bottom: -1px; }
-        .tab { padding: 10px 20px; background: var(--secondary); border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 13px; }
-        .tab.active { background: var(--surface); border-bottom: 2px solid var(--primary); font-weight: bold; }
-        .chart-area { background: var(--surface); border: 1px solid var(--border); border-radius: 0 8px 8px 8px; flex: 1; padding: 15px; position: relative; }
+        .tabs { display: flex; gap: 5px; }
+        .tab { padding: 10px 20px; background: var(--secondary); cursor: pointer; }
+        .tab.active { background: var(--surface); border-bottom: 2px solid var(--primary); }
+
+        .chart-area { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; flex: 1; padding: 15px; }
     </style>
 </head>
 <body>
 
-<nav>
-    <div class="menu-item" id="m-file">File
-        <div class="dropdown">
-            <div onclick="saveGraph()">Save Graph as PNG</div>
-        </div>
-    </div>
-    <div class="menu-item" id="m-settings">Settings
-        <div class="dropdown">
-            <div onclick="setTheme('dark')">Dark Theme</div>
-            <div onclick="setTheme('light')">Light Theme</div>
-            <hr style="border:0; border-top:1px solid var(--border)">
-            <div onclick="setLanguage('en')">English</div>
-            <div onclick="setLanguage('uk')">Українська</div>
-        </div>
-    </div>
-    <div class="menu-item" id="m-help" onclick="alert('Traffic Generator Help')">Help</div>
-</nav>
-
 <main>
     <section class="sidebar">
         <div class="group-box">
-            <h3 id="t-params">Parameters</h3>
             <div class="form-grid">
-                <label id="l-interface">Interface:</label>
-                <input type="text" value="eth0" id="in-interface">
-                
-                <label id="l-mode">Mode:</label>
-                <select id="in-mode">
-                    <option value="1">PF_RING Standard</option>
-                    <option value="2">PF_RING ZC</option>
-                    <option value="3">DPDK</option>
-                </select>
+                <label>Interface:</label>
+                <input type="text" value="None" id="in-interface" readonly>
 
-                <label id="l-speed">Pref. Speed:</label>
-                <input type="number" value="1000" id="in-speed">
+                <label>Mode:</label>
+                <select id="in-mode"><option value="0">None</option></select>
 
-                <label id="l-pkt-size">Packet Size:</label>
-                <input type="number" value="64" id="in-size">
+                <label>Pref. Speed:</label>
+                <input type="number" value="0" id="in-speed">
 
-                <label id="l-time">Time:</label>
+                <label>Packet Size:</label>
+                <input type="number" value="16" id="in-size">
+
+                <label>Burst Size:</label>
+                <input type="number" value="1" id="in-burst">
+
+                <label>Copies:</label>
+                <input type="number" value="0" id="in-copies">
+
+                <label>Sent:</label>
+                <input type="number" value="0" id="in-sent">
+
+                <label>Packet Pattern:</label>
+                <input type="text" value="AA" maxlength="2" id="in-pattern">
+
+                <label>Time:</label>
                 <input type="time" value="00:00:00" step="1" id="in-time">
-            </div>
-
-            <div style="margin-top: 15px;">
-                <button id="btn-file" style="width:100%; margin-bottom:10px;" onclick="toggleFileMode()">📁 Send File: OFF</button>
-                <input type="text" placeholder="No file selected" id="file-path" readonly style="font-size:11px;">
             </div>
 
             <div class="btn-row">
@@ -132,16 +104,16 @@
     <section class="dashboard">
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-label" id="l-stat-speed">Current Speed</div>
-                <div class="stat-value"><span id="val-speed">0.00</span> <small style="font-size:12px" id="val-unit">Mbps</small></div>
+                <div>Speed</div>
+                <div><span id="val-speed">0</span> <small id="val-unit">Mbps</small></div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">PPS</div>
-                <div class="stat-value" id="val-pps">0</div>
+                <div>PPS</div>
+                <div id="val-pps">0</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label" id="l-stat-total">Total Sent</div>
-                <div class="stat-value" id="val-total">0</div>
+                <div>Total</div>
+                <div id="val-total">0</div>
             </div>
         </div>
 
@@ -159,172 +131,74 @@
 
 <script>
     let socket = null;
-    let isInitialized = false;
     let isRunning = false;
     let isPaused = false;
+    let currentUnit = "bps";
 
-    // ===================== INIT =====================
-    function initConnection() {
-        const urlParams = new URLSearchParams(window.location.search);
-        let targetHost = urlParams.get('host') || window.location.hostname;
-        let targetPort = urlParams.get('target_port') || "8080";
+    // ===== CHART =====
+    let chart;
+    let chartData = {
+        labels: [],
+        datasets: [{
+            label: "bps",
+            data: [],
+            borderWidth: 2,
+            tension: 0.2
+        }]
+    };
 
-        const hostClean = targetHost.replace(/^https?:\/\//, '');
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-        const connectionUrl = `${wsProtocol}${hostClean}`;
-
-        console.log("[WS] Connecting:", connectionUrl); //
-
-        socket = new WebSocket(connectionUrl);
-
-        socket.onopen = () => {
-            console.log("[WS] Connected");
-        };
-
-        socket.onmessage = (event) => {
-            handleMessage(event.data);
-        };
-
-        socket.onclose = () => {
-            console.warn("[WS] Connection closed");
-            isRunning = false;
-            isPaused = false;
-            resetUIState();
-        };
-
-        socket.onerror = (err) => {
-            console.error("[WS] Error:", err);
-        };
-    }
-
-    // ===================== UI RESET =====================
-    function resetUIState() {
-        const btn = document.getElementById('btn-start');
-        const pauseBtn = document.getElementById('btn-pause');
-
-        btn.innerText = "▶ Start";
-        btn.style.background = "var(--primary)";
-        pauseBtn.disabled = true;
-        pauseBtn.innerText = "|| Pause";
-    }
-
-    // ===================== MESSAGE HANDLER =====================
-    function handleMessage(rawData) {
-        try {
-            const json = JSON.parse(rawData);
-            const obj = Array.isArray(json) ? json[0] : json;
-
-            // --- ERROR ---
-            if (obj.error) {
-                alert(obj.error);
-                socket.close();
-                return;
+    function initChart() {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                animation: false,
+                responsive: true,
+                scales: {
+                    x: { display: false },
+                    y: { beginAtZero: true }
+                }
             }
-
-            // --- HANDSHAKE ---
-            if (obj.status === "CONNECTED") {
-                processInterfaceInfo(obj);
-                isInitialized = true;
-                return;
-            }
-
-            // --- ACK ---
-            if (obj.type === "ACK") {
-                handleAck(obj);
-                return;
-            }
-
-            // --- DATA ---
-            processDataResponse(obj);
-
-        } catch (e) {
-            console.error("[WS] JSON parse error", e);
-        }
+        });
     }
 
-    // ===================== ACK HANDLER =====================
-    function handleAck(obj) {
-        console.log("[ACK]", obj);
+    // ===== SWITCH TABS =====
+    function switchUnit(unit, el) {
+        currentUnit = unit;
 
-        const status = obj.status;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
 
-        const btn = document.getElementById('btn-start');
-        const pauseBtn = document.getElementById('btn-pause');
-
-        switch (status) {
-            case "STARTED":
-                isRunning = true;
-                btn.innerText = "■ Stop";
-                btn.style.background = "var(--error)";
-                pauseBtn.disabled = false;
-                break;
-
-            case "STOPPED":
-                isRunning = false;
-                resetUIState();
-                break;
-
-            case "PAUSED":
-                isPaused = true;
-                pauseBtn.innerText = "▶ Resume";
-                break;
-
-            case "RESUMED":
-                isPaused = false;
-                pauseBtn.innerText = "|| Pause";
-                break;
-        }
+        chart.data.datasets[0].label = unit;
+        chart.data.datasets[0].data = [];
+        chart.data.labels = [];
+        chart.update();
     }
 
-    // ===================== START =====================
-    function onStartClicked() {
-        console.log("Start CLICKED");
-        if (!socket || socket.readyState !== WebSocket.OPEN) {
-            console.error("[WS] Not connected");
-            return;
+    // ===== UPDATE CHART =====
+    function updateChart(bps, BPS) {
+        const value = currentUnit === "bps" ? bps : BPS;
+
+        chart.data.labels.push('');
+        chart.data.datasets[0].data.push(value);
+
+        if (chart.data.labels.length > 50) {
+            chart.data.labels.shift();
+            chart.data.datasets[0].data.shift();
         }
 
-        if (isRunning) {
-            stopGenerator();
-            return;
-        }
-
-        const payload = [{
-            TYPE: 2,
-            COMMAND: 0,
-            MODE: parseInt(document.getElementById('in-mode').value),
-            SPEED: document.getElementById('in-speed').value,
-            PACK_SIZE: document.getElementById('in-size').value
-        }];
-
-        console.log("JSON: ", payload);
-
-        socket.send(JSON.stringify(payload));
+        chart.update();
     }
 
-    // ===================== STOP =====================
-    function stopGenerator() {
-        if (!socket || socket.readyState !== WebSocket.OPEN) return;
-
-        socket.send(JSON.stringify([{
-            TYPE: 2,
-            COMMAND: 3
-        }]));
+    // ===== UI =====
+    function updateUI(bps, BPS, pps, total) {
+        document.getElementById('val-speed').innerText = bps.toFixed(2);
+        document.getElementById('val-pps').innerText = pps;
+        document.getElementById('val-total').innerText = total;
     }
 
-    // ===================== PAUSE / RESUME =====================
-    function onPauseClicked() {
-        if (!socket || socket.readyState !== WebSocket.OPEN) return;
-
-        const cmd = isPaused ? 2 : 1;
-
-        socket.send(JSON.stringify([{
-            TYPE: 2,
-            COMMAND: cmd
-        }]));
-    }
-
-    // ===================== DATA =====================
+    // ===== DATA =====
     function processDataResponse(obj) {
         if (!isRunning) return;
 
@@ -333,40 +207,50 @@
         const pps = Number(obj["pps"] || 0);
         const total = Number(obj["totalSend"] || 0);
 
-        updateUI(bps, pps);
-        updateChart(bps);
+        updateUI(bps, BPS, pps, total);
+        updateChart(bps, BPS);
+    }
 
-        const totalEl = document.getElementById('val-total');
-        if (totalEl) {
-            totalEl.innerText = total.toLocaleString();
+    // ===== WS =====
+    function initConnection() {
+        socket = new WebSocket("ws://" + window.location.host);
+
+        socket.onopen = () => console.log("Connected");
+        socket.onmessage = (e) => handleMessage(e.data);
+    }
+
+    function handleMessage(raw) {
+        const obj = JSON.parse(raw);
+        if (obj.type === "ACK") return;
+
+        if (obj.status === "CONNECTED") {
+            document.getElementById('in-interface').value = obj["InterfaceName"];
+            return;
         }
+
+        processDataResponse(obj);
     }
 
-    // ===================== PLACEHOLDERS =====================
-    function processInterfaceInfo(obj) {
-        console.log("[INIT]", obj);
-        const interface = document.getElementById('in-interface');
-        interface.value = obj["InterfaceName"];
-        const modes = document.getElementById('in-mode');
-        
+    // ===== CONTROL =====
+    function onStartClicked() {
+        if (!socket || socket.readyState !== WebSocket.OPEN) return;
 
-        // fill UI if needed
+        isRunning = true;
+
+        socket.send(JSON.stringify([{
+            TYPE: 2,
+            COMMAND: 0
+        }]));
     }
 
-    function updateUI(bps, pps) {
-        const bpsEl = document.getElementById('val-bps');
-        const ppsEl = document.getElementById('val-pps');
-
-        if (bpsEl) bpsEl.innerText = bps.toLocaleString();
-        if (ppsEl) ppsEl.innerText = pps.toLocaleString();
+    function onPauseClicked() {
+        if (!socket) return;
+        socket.send(JSON.stringify([{ TYPE: 2, COMMAND: isPaused ? 2 : 1 }]));
     }
 
-    function updateChart(value) {
-        // integrate with your chart lib if present
-    }
-
-    // ===================== INIT CALL =====================
+    // ===== INIT =====
     window.onload = () => {
+        initChart();
         initConnection();
     };
 </script>
