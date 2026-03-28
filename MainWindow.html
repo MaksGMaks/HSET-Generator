@@ -522,21 +522,31 @@
         if (socket) socket.send(JSON.stringify([{ TYPE: 2, COMMAND: isPaused ? 2 : 1 }]));
     }
 
-    function resetUIState() {
-        document.getElementById('btn-start').innerText = "▶ Start";
-        document.getElementById('btn-start').style.background = "var(--primary)";
-        document.getElementById('btn-pause').disabled = true;
-        document.getElementById('btn-pause').innerText = "|| Pause";
-    }
+    function processDataResponse(obj) {
+        if (!isRunning) return;
 
-    function processInterfaceInfo(obj) {
-        const modesEl = document.getElementById('in-mode');
-        document.getElementById('in-interface').value = obj["InterfaceName"];
-        modesEl.innerHTML = "";
-        if (obj.PfRingSupported) modesEl.add(new Option("PF_RING", "1"));
-        if (obj.PfRingZcSupported) modesEl.add(new Option("PF_RING ZC", "2"));
-        if (obj.DpdkSupported) modesEl.add(new Option("DPDK", "4"));
-        if (modesEl.options.length === 0) modesEl.add(new Option("None", "0"));
+        const bps = Number(obj["bps"] || 0);
+        const BPS = Number(obj["BPS"] || 0);
+        const pps = Number(obj["pps"] || 0);
+        const total = Number(obj["totalSend"] || 0);
+        const timeVal = Number(obj["time"] || 0);
+
+        // Update History
+        rawHistory.bps.push(bps);
+        rawHistory.BPS.push(BPS);
+        if (rawHistory.bps.length > 50) {
+            rawHistory.bps.shift();
+            rawHistory.BPS.shift();
+        }
+
+        chart.data.labels.push('');
+        if (chart.data.labels.length > 50) chart.data.labels.shift();
+
+        updateChartDisplay();
+        updateTimer(timeVal);
+
+        document.getElementById('val-pps').innerText = pps.toLocaleString();
+        document.getElementById('val-total').innerText = total.toLocaleString();
     }
 
     const translations = {
