@@ -290,32 +290,37 @@
         const interface = document.getElementById('in-interface');
         interface.value = obj["InterfaceName"];
         const modesEl = document.getElementById('in-mode');
-        modesEl.innerHTML = "";
-        if(obj.PfRingSupported) {
+        modesEl.innerHTML = ""; // clear previous options
+
+        if (obj.PfRingSupported) {
             console.log("[INIT] PF_RING SUPPORTED");
-            const option = document.createElement("pf_ring_s");
-            option.value = 1;      // or mode if backend expects string
+            const option = document.createElement("option");
+            option.value = "1";      // backend can parse this
             option.textContent = "PF_RING";
             modesEl.appendChild(option);
         }
-        if(obj.PfRingZcSupported) {
+
+        if (obj.PfRingZcSupported) {
             console.log("[INIT] PF_RING ZC SUPPORTED");
-            const option = document.createElement("pf_ring_zc_s");
-            option.value = 2;      // or mode if backend expects string
-            option.textContent = "PF_RING_ZC";
+            const option = document.createElement("option");
+            option.value = "2";
+            option.textContent = "PF_RING ZC";
             modesEl.appendChild(option);
         }
-        if(obj.DpdkSupported) {
+
+        if (obj.DpdkSupported) {
             console.log("[INIT] DPDK SUPPORTED");
-            const option = document.createElement("dpdk");
-            option.value = 4;      // or mode if backend expects string
+            const option = document.createElement("option");
+            option.value = "4";
             option.textContent = "DPDK";
             modesEl.appendChild(option);
         }
+
+        // If nothing supported
         if (modesEl.options.length === 0) {
             console.log("[INIT] NONE SUPPORTED");
-            const option = document.createElement("none_mode");
-            option.value = 0;      // or mode if backend expects string
+            const option = document.createElement("option");
+            option.value = "0";
             option.textContent = "None";
             modesEl.appendChild(option);
         }
