@@ -340,46 +340,158 @@
         document.getElementById('val-unit').innerText = formatted.unit;
     }
 
-    function processDataResponse(obj) {
-        if (!isRunning) return;
-        const bps = Number(obj["bps"] || 0);
-        const BPS = Number(obj["BPS"] || 0);
-        rawHistory.bps.push(bps);
-        rawHistory.BPS.push(BPS);
-        if (rawHistory.bps.length > 50) { rawHistory.bps.shift(); rawHistory.BPS.shift(); }
-        chart.data.labels.push('');
-        if (chart.data.labels.length > 50) chart.data.labels.shift();
-        updateChartDisplay();
-        updateTimer(Number(obj["time"] || 0));
-        document.getElementById('val-pps').innerText = Number(obj["pps"] || 0).toLocaleString();
-        document.getElementById('val-total').innerText = Number(obj["totalSend"] || 0).toLocaleString();
+    function initConnection() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let targetHost = urlParams.get('host') || window.location.hostname;
+        let targetPort = urlParams.get('target_port') || "8080";
+
+        const hostClean = targetHost.replace(/^https?:\/\//, '');
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const connectionUrl = `${wsProtocol}${hostClean}`;
+
+        console.log("[WS] Connecting:", connectionUrl); //
+
+        socket = new WebSocket(connectionUrl);
+
+        socket.onopen = () => {
+            console.log("[WS] Connected");
+        };
+
+        socket.onmessage = (event) => {
+            handleMessage(event.data);
+        };
+
+        socket.onclose = () => {
+            console.warn("[WS] Connection closed");
+            isRunning = false;
+            isPaused = false;
+            resetUIState();
+        };
+
+        socket.onerror = (err) => {
+            console.error("[WS] Error:", err);
+        };
     }
 
+
+    // ===================== PLACEHOLDERS =====================
+    function processInterfaceInfo(obj) {
+        console.log("[INIT]", obj);
+        const interface = document.getElementById('in-interface');
+        interface.value = obj["InterfaceName"];
+        const modesEl = document.getElementById('in-mode');
+        modesEl.innerHTML = ""; // clear previous options
+
+        if (obj.PfRingSupported) {
+            console.log("[INIT] PF_RING SUPPORTED. Setting option");
+            const option = document.createElement("option");
+            option.value = "1";      // backend can parse this
+            option.textContent = "PF_RING";
+            modesEl.appendChild(option);
+        }
+
+        if (obj.PfRingZcSupported) {
+            console.log("[INIT] PF_RING ZC SUPPORTED. Setting option");
+            const option = document.createElement("option");
+            option.value = "2";
+            option.textContent = "PF_RING ZC";
+            modesEl.appendChild(option);
+        }
+
+        if (obj.DpdkSupported) {
+            console.log("[INIT] DPDK SUPPORTED. Setting option");
+            const option = document.createElement("option");
+            option.value = "4";
+            option.textContent = "DPDK";
+            modesEl.appendChild(option);
+        }
+
+        // If nothing supported
+        if (modesEl.options.length === 0) {
+            console.log("[INIT] NONE SUPPORTED. Setting option");
+            const option = document.createElement("option");
+            option.value = "0";
+            option.textContent = "None";
+            modesEl.appendChild(option);
+        }
+    }
+
+    // ===================== UI RESET =====================
+    function resetUIState() {
+        const btn = document.getElementById('btn-start');
+        const pauseBtn = document.getElementById('btn-pause');
+
+        btn.innerText = "▶ Start";
+        btn.style.background = "var(--primary)";
+        pauseBtn.disabled = true;
+        pauseBtn.innerText = "|| Pause";
+    }
+
+    // ===================== MESSAGE HANDLER =====================
     function handleMessage(rawData) {
         try {
             const json = JSON.parse(rawData);
             const obj = Array.isArray(json) ? json[0] : json;
-            if (obj.error) { alert(obj.error); socket.close(); return; }
-            if (obj.status === "CONNECTED") { processInterfaceInfo(obj); isInitialized = true; return; }
-            if (obj.type === "ACK") { handleAck(obj); return; }
+
+            // --- ERROR ---
+            if (obj.error) {
+                alert(obj.error);
+                socket.close();
+                return;
+            }
+
+            // --- HANDSHAKE ---
+            if (obj.status === "CONNECTED") {
+                processInterfaceInfo(obj);
+                isInitialized = true;
+                return;
+            }
+
+            // --- ACK ---
+            if (obj.type === "ACK") {
+                handleAck(obj);
+                return;
+            }
+
+            // --- DATA ---
             processDataResponse(obj);
-        } catch (e) { console.error("[WS] JSON parse error", e); }
+
+        } catch (e) {
+            console.error("[WS] JSON parse error", e);
+        }
     }
 
+    // ===================== ACK HANDLER =====================
     function handleAck(obj) {
+        console.log("[ACK]", obj);
+
         const status = obj.status;
+
         const btn = document.getElementById('btn-start');
         const pauseBtn = document.getElementById('btn-pause');
+
         switch (status) {
             case "STARTED":
-                isRunning = true; btn.innerText = "■ Stop";
-                btn.style.background = "var(--error)"; pauseBtn.disabled = false; break;
+                isRunning = true;
+                btn.innerText = "■ Stop";
+                btn.style.background = "var(--error)";
+                pauseBtn.disabled = false;
+                break;
+
             case "STOPPED":
-                isRunning = false; resetUIState(); break;
+                isRunning = false;
+                resetUIState();
+                break;
+
             case "PAUSED":
-                isPaused = true; pauseBtn.innerText = "▶ Resume"; break;
+                isPaused = true;
+                pauseBtn.innerText = "▶ Resume";
+                break;
+
             case "RESUMED":
-                isPaused = false; pauseBtn.innerText = "|| Pause"; break;
+                isPaused = false;
+                pauseBtn.innerText = "|| Pause";
+                break;
         }
     }
 
@@ -529,7 +641,7 @@
 
     window.onload = () => {
         initChart();
-        // initConnection(); // Uncomment this for real use
+        initConnection(); // Uncomment this for real use
     };
 </script>
 </body>
