@@ -289,7 +289,26 @@
         console.log("[INIT]", obj);
         const interface = document.getElementById('in-interface');
         interface.value = obj["InterfaceName"];
-        const modes = document.getElementById('in-mode');
+        const modesEl = document.getElementById('in-mode');
+        modesEl.innerHTML = "";
+        if(obj["PfRingSupported"] === true) {
+            const option = document.createElement("pf_ring_s");
+            option.value = 1;      // or mode if backend expects string
+            option.textContent = "PF_RING";
+            modesEl.appendChild(option);
+        }
+        if(obj["PfRingZcSupported"] === true) {
+            const option = document.createElement("pf_ring_zc_s");
+            option.value = 2;      // or mode if backend expects string
+            option.textContent = "PF_RING_ZC";
+            modesEl.appendChild(option);
+        }
+        if(obj["DpdkSupported"] === true) {
+            const option = document.createElement("dpdk");
+            option.value = 4;      // or mode if backend expects string
+            option.textContent = "DPDK";
+            modesEl.appendChild(option);
+        }
 
 
         // fill UI if needed
