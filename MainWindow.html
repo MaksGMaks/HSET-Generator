@@ -293,7 +293,7 @@
         modesEl.innerHTML = ""; // clear previous options
 
         if (obj.PfRingSupported) {
-            console.log("[INIT] PF_RING SUPPORTED");
+            console.log("[INIT] PF_RING SUPPORTED. Setting option");
             const option = document.createElement("option");
             option.value = "1";      // backend can parse this
             option.textContent = "PF_RING";
@@ -301,7 +301,7 @@
         }
 
         if (obj.PfRingZcSupported) {
-            console.log("[INIT] PF_RING ZC SUPPORTED");
+            console.log("[INIT] PF_RING ZC SUPPORTED. Setting option");
             const option = document.createElement("option");
             option.value = "2";
             option.textContent = "PF_RING ZC";
@@ -309,7 +309,7 @@
         }
 
         if (obj.DpdkSupported) {
-            console.log("[INIT] DPDK SUPPORTED");
+            console.log("[INIT] DPDK SUPPORTED. Setting option");
             const option = document.createElement("option");
             option.value = "4";
             option.textContent = "DPDK";
@@ -318,7 +318,7 @@
 
         // If nothing supported
         if (modesEl.options.length === 0) {
-            console.log("[INIT] NONE SUPPORTED");
+            console.log("[INIT] NONE SUPPORTED. Setting option");
             const option = document.createElement("option");
             option.value = "0";
             option.textContent = "None";
