@@ -168,62 +168,113 @@
     let isPaused = false;
 
     let currentUnit = "bps";
-
-    // ===== CHART =====
-    let chart;
-    let chartData = {
-        labels: [],
-        datasets: [{
-            label: "bps",
-            data: [],
-            borderWidth: 2,
-            tension: 0.2
-        }]
-    };
+    let rawHistory = { bps: [], BPS: [] };
 
     function initChart() {
         const ctx = document.getElementById('mainChart').getContext('2d');
         chart = new Chart(ctx, {
             type: 'line',
-            data: chartData,
-            options: {
-                animation: false,
-                responsive: true,
-                scales: {
-                    x: { display: false },
-                    y: { beginAtZero: true }
-                }
-            }
+            data: { labels: [], datasets: [{ label: "bps", data: [], borderColor: '#007acc', borderWidth: 2, tension: 0.2, fill: false }] },
+            options: { animation: false, responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { beginAtZero: true } } }
         });
     }
 
-    // ===== SWITCH TABS =====
+    function formatSpeed(value, isBytes) {
+        const base = isBytes ? 1024 : 1000;
+        const units = isBytes ? ['B/s', 'KB/s', 'MB/s', 'GB/s'] : ['bps', 'kbps', 'Mbps', 'Gbps'];
+        let i = 0;
+        while (value >= base && i < units.length - 1) {
+            value /= base;
+            i++;
+        }
+        return { val: value.toFixed(2), unit: units[i] };
+    }
+
     function switchUnit(unit, el) {
         currentUnit = unit;
-
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         el.classList.add('active');
-
-        chart.data.datasets[0].label = unit;
-        chart.data.datasets[0].data = [];
-        chart.data.labels = [];
-        chart.update();
+        updateChartDisplay();
     }
 
-    // ===== UPDATE CHART =====
-    function updateChart(bps, BPS) {
-        const value = currentUnit === "bps" ? bps : BPS;
+    function updateTimer(backendTime) {
+        if (backendTime <= 0) return;
 
-        chart.data.labels.push('');
-        chart.data.datasets[0].data.push(value);
+        let timeInput = document.getElementById('in-time');
+        let parts = timeInput.value.split(':').map(Number);
+        let seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
 
-        if (chart.data.labels.length > 50) {
-            chart.data.labels.shift();
-            chart.data.datasets[0].data.shift();
+        // Logic from Qt: if starting time was 0, it's uptime. Else, it's countdown.
+        if (initialTimeWasZero) {
+            seconds++;
+        } else {
+            seconds = Math.max(0, seconds - 1);
         }
 
-        chart.update();
+        let h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+        let m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+        let s = (seconds % 60).toString().padStart(2, '0');
+        timeInput.value = `${h}:${m}:${s}`;
     }
+
+    function updateChartDisplay() {
+        const dataKey = currentUnit; // 'bps' or 'BPS'
+        const isBytes = currentUnit === 'BPS';
+
+        // Calculate units based on the latest value to match Qt's rescale logic
+        const latest = rawHistory[dataKey][rawHistory[dataKey].length - 1] || 0;
+        const formatted = formatSpeed(latest, isBytes);
+
+        // Rescale all visible history to current unit
+        const base = isBytes ? 1024 : 1000;
+        const units = isBytes ? ['B/s', 'KB/s', 'MB/s', 'GB/s'] : ['bps', 'kbps', 'Mbps', 'Gbps'];
+        const unitIndex = units.indexOf(formatted.unit);
+        const scaleDivisor = Math.pow(base, unitIndex);
+
+        chart.data.datasets[0].label = formatted.unit;
+        chart.data.datasets[0].data = rawHistory[dataKey].map(v => v / scaleDivisor);
+
+        // Dynamic Y-Axis rounding logic from Qt (val * 1.5 rounded to nearest power of 10)
+        const maxVal = Math.max(...chart.data.datasets[0].data, 1);
+        const rawRange = maxVal * 1.5;
+        const step = Math.pow(10, Math.floor(Math.log10(rawRange)));
+        chart.options.scales.y.max = Math.ceil(rawRange / step) * step;
+
+        chart.update();
+
+        // Update Big Stat Card
+        document.getElementById('val-speed').innerText = formatted.val;
+        document.getElementById('val-unit').innerText = formatted.unit;
+    }
+
+    function processDataResponse(obj) {
+        if (!isRunning) return;
+
+        const bps = Number(obj["bps"] || 0);
+        const BPS = Number(obj["BPS"] || 0);
+        const pps = Number(obj["pps"] || 0);
+        const total = Number(obj["totalSend"] || 0);
+        const timeVal = Number(obj["time"] || 0);
+
+        // Update History
+        rawHistory.bps.push(bps);
+        rawHistory.BPS.push(BPS);
+        if (rawHistory.bps.length > 50) {
+            rawHistory.bps.shift();
+            rawHistory.BPS.shift();
+        }
+
+        chart.data.labels.push('');
+        if (chart.data.labels.length > 50) chart.data.labels.shift();
+
+        updateChartDisplay();
+        updateTimer(timeVal);
+
+        document.getElementById('val-pps').innerText = pps.toLocaleString();
+        document.getElementById('val-total').innerText = total.toLocaleString();
+    }
+
+    let initialTimeWasZero = true;
 
     // ===== UI =====
     function updateUI(bps, BPS, pps, total) {
@@ -266,23 +317,6 @@
         };
     }
 
-    // ===================== DATA =====================
-    function processDataResponse(obj) {
-        if (!isRunning) return;
-
-        const bps = Number(obj["bps"] || 0);
-        const BPS = Number(obj["BPS"] || 0);
-        const pps = Number(obj["pps"] || 0);
-        const total = Number(obj["totalSend"] || 0);
-
-        updateUI(bps, pps);
-        updateChart(bps);
-
-        const totalEl = document.getElementById('val-total');
-        if (totalEl) {
-            totalEl.innerText = total.toLocaleString();
-        }
-    }
 
     // ===================== PLACEHOLDERS =====================
     function processInterfaceInfo(obj) {
@@ -417,6 +451,15 @@
             stopGenerator();
             return;
         }
+
+        rawHistory = { bps: [], BPS: [] };
+        chart.data.labels = [];
+        chart.data.datasets[0].data = [];
+        document.getElementById('val-total').innerText = "0";
+        document.getElementById('val-pps').innerText = "0";
+
+        const timeVal = document.getElementById('in-time').value;
+        initialTimeWasZero = (timeVal === "00:00:00");
 
         const payload = [{
             TYPE: 2,
