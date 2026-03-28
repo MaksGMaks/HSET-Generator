@@ -266,6 +266,35 @@
         };
     }
 
+    // ===================== DATA =====================
+    function processDataResponse(obj) {
+        if (!isRunning) return;
+
+        const bps = Number(obj["bps"] || 0);
+        const BPS = Number(obj["BPS"] || 0);
+        const pps = Number(obj["pps"] || 0);
+        const total = Number(obj["totalSend"] || 0);
+
+        updateUI(bps, pps);
+        updateChart(bps);
+
+        const totalEl = document.getElementById('val-total');
+        if (totalEl) {
+            totalEl.innerText = total.toLocaleString();
+        }
+    }
+
+    // ===================== PLACEHOLDERS =====================
+    function processInterfaceInfo(obj) {
+        console.log("[INIT]", obj);
+        const interface = document.getElementById('in-interface');
+        interface.value = obj["InterfaceName"];
+        const modes = document.getElementById('in-mode');
+
+
+        // fill UI if needed
+    }
+
     // ===================== UI RESET =====================
     function resetUIState() {
         const btn = document.getElementById('btn-start');
@@ -397,50 +426,10 @@
         }]));
     }
 
-    // ===================== DATA =====================
-    function processDataResponse(obj) {
-        if (!isRunning) return;
-
-        const bps = Number(obj["bps"] || 0);
-        const BPS = Number(obj["BPS"] || 0);
-        const pps = Number(obj["pps"] || 0);
-        const total = Number(obj["totalSend"] || 0);
-
-        updateUI(bps, pps);
-        updateChart(bps);
-
-        const totalEl = document.getElementById('val-total');
-        if (totalEl) {
-            totalEl.innerText = total.toLocaleString();
-        }
-    }
-
-    // ===================== PLACEHOLDERS =====================
-    function processInterfaceInfo(obj) {
-        console.log("[INIT]", obj);
-        const interface = document.getElementById('in-interface');
-        interface.value = obj["InterfaceName"];
-        const modes = document.getElementById('in-mode');
-
-
-        // fill UI if needed
-    }
-
-    function updateUI(bps, pps) {
-        const bpsEl = document.getElementById('val-bps');
-        const ppsEl = document.getElementById('val-pps');
-
-        if (bpsEl) bpsEl.innerText = bps.toLocaleString();
-        if (ppsEl) ppsEl.innerText = pps.toLocaleString();
-    }
-
-    function updateChart(value) {
-        // integrate with your chart lib if present
-    }
-
     // ===================== INIT CALL =====================
     window.onload = () => {
         initConnection();
+        initChart();
     };
 </script>
 
