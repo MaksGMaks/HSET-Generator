@@ -31,51 +31,83 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { margin: 0; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
 
+        /* Menu Bar */
         nav { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; padding: 0 10px; z-index: 100; }
         .menu-item { position: relative; padding: 10px 15px; cursor: pointer; font-size: 14px; }
         .menu-item:hover { background: var(--secondary); }
-        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--surface); border: 1px solid var(--border); min-width: 160px; }
+        .dropdown { display: none; position: absolute; top: 100%; left: 0; background: var(--surface); border: 1px solid var(--border); min-width: 160px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .menu-item:hover .dropdown { display: block; }
+        .dropdown div { padding: 10px; font-size: 13px; }
+        .dropdown div:hover { background: var(--primary); color: white; }
 
+        /* Main Layout */
         main { display: grid; grid-template-columns: 380px 1fr; flex: 1; overflow: hidden; }
-        .sidebar { padding: 20px; border-right: 1px solid var(--border); overflow-y: auto; }
-        .group-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 15px; }
+
+        /* Sidebar / Parameters */
+        .sidebar { padding: 20px; border-right: 1px solid var(--border); overflow-y: auto; background: var(--bg); }
+        .group-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .group-box h3 { margin-top: 0; font-size: 14px; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
 
         .form-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 12px; align-items: center; }
+        label { font-size: 13px; font-weight: 600; }
         input, select { background: var(--input-bg); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: 4px; width: 100%; }
 
         .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        button { padding: 10px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
+        button { padding: 10px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .btn-start { background: var(--primary); color: white; }
         .btn-pause { background: var(--secondary); color: var(--text); }
+        button:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        .dashboard { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        /* Dashboard */
+        .dashboard { padding: 20px; display: flex; flex-direction: column; gap: 20px; background: var(--bg); }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
         .stat-card { background: var(--surface); padding: 15px; border-radius: 8px; border: 1px solid var(--border); text-align: center; }
+        .stat-label { font-size: 12px; opacity: 0.7; margin-bottom: 5px; }
+        .stat-value { font-size: 22px; font-weight: bold; color: var(--primary); }
 
-        .tabs { display: flex; gap: 5px; }
-        .tab { padding: 10px 20px; background: var(--secondary); cursor: pointer; }
-        .tab.active { background: var(--surface); border-bottom: 2px solid var(--primary); }
-
-        .chart-area { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; flex: 1; padding: 15px; }
+        /* Tabs & Charts */
+        .tabs { display: flex; gap: 5px; margin-bottom: -1px; }
+        .tab { padding: 10px 20px; background: var(--secondary); border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 13px; }
+        .tab.active { background: var(--surface); border-bottom: 2px solid var(--primary); font-weight: bold; }
+        .chart-area { background: var(--surface); border: 1px solid var(--border); border-radius: 0 8px 8px 8px; flex: 1; padding: 15px; position: relative; }
     </style>
 </head>
 <body>
 
+<nav>
+    <div class="menu-item" id="m-file">File
+        <div class="dropdown">
+            <div onclick="saveGraph()">Save Graph as PNG</div>
+        </div>
+    </div>
+    <div class="menu-item" id="m-settings">Settings
+        <div class="dropdown">
+            <div onclick="setTheme('dark')">Dark Theme</div>
+            <div onclick="setTheme('light')">Light Theme</div>
+            <hr style="border:0; border-top:1px solid var(--border)">
+            <div onclick="setLanguage('en')">English</div>
+            <div onclick="setLanguage('uk')">Українська</div>
+        </div>
+    </div>
+    <div class="menu-item" id="m-help" onclick="alert('Traffic Generator Help')">Help</div>
+</nav>
+
 <main>
     <section class="sidebar">
         <div class="group-box">
+            <h3 id="t-params">Parameters</h3>
             <div class="form-grid">
-                <label>Interface:</label>
-                <input type="text" value="None" id="in-interface" readonly>
+                <label id="l-interface">Interface:</label>
+                <input type="text" value="None" id="in-interface">
+                <label id="l-mode">Mode:</label>
+                <select id="in-mode">
+                    <option value="0">None</option>
+                </select>
 
-                <label>Mode:</label>
-                <select id="in-mode"><option value="0">None</option></select>
-
-                <label>Pref. Speed:</label>
+                <label id="l-speed">Pref. Speed:</label>
                 <input type="number" value="0" id="in-speed">
 
-                <label>Packet Size:</label>
+                <label id="l-pkt-size">Packet Size:</label>
                 <input type="number" value="16" id="in-size">
 
                 <label>Burst Size:</label>
@@ -90,7 +122,7 @@
                 <label>Packet Pattern:</label>
                 <input type="text" value="AA" maxlength="2" id="in-pattern">
 
-                <label>Time:</label>
+                <label id="l-time">Time:</label>
                 <input type="time" value="00:00:00" step="1" id="in-time">
             </div>
 
@@ -104,16 +136,16 @@
     <section class="dashboard">
         <div class="stats-grid">
             <div class="stat-card">
-                <div>Speed</div>
-                <div><span id="val-speed">0</span> <small id="val-unit">Mbps</small></div>
+                <div class="stat-label" id="l-stat-speed">Current Speed</div>
+                <div class="stat-value"><span id="val-speed">0.00</span> <small style="font-size:12px" id="val-unit">Mbps</small></div>
             </div>
             <div class="stat-card">
-                <div>PPS</div>
-                <div id="val-pps">0</div>
+                <div class="stat-label">PPS</div>
+                <div class="stat-value" id="val-pps">0</div>
             </div>
             <div class="stat-card">
-                <div>Total</div>
-                <div id="val-total">0</div>
+                <div class="stat-label" id="l-stat-total">Total Sent</div>
+                <div class="stat-value" id="val-total">0</div>
             </div>
         </div>
 
@@ -131,8 +163,10 @@
 
 <script>
     let socket = null;
+    let isInitialized = false;
     let isRunning = false;
     let isPaused = false;
+
     let currentUnit = "bps";
 
     // ===== CHART =====
@@ -381,9 +415,31 @@
         }
     }
 
-    // ===== INIT =====
+    // ===================== PLACEHOLDERS =====================
+    function processInterfaceInfo(obj) {
+        console.log("[INIT]", obj);
+        const interface = document.getElementById('in-interface');
+        interface.value = obj["InterfaceName"];
+        const modes = document.getElementById('in-mode');
+
+
+        // fill UI if needed
+    }
+
+    function updateUI(bps, pps) {
+        const bpsEl = document.getElementById('val-bps');
+        const ppsEl = document.getElementById('val-pps');
+
+        if (bpsEl) bpsEl.innerText = bps.toLocaleString();
+        if (ppsEl) ppsEl.innerText = pps.toLocaleString();
+    }
+
+    function updateChart(value) {
+        // integrate with your chart lib if present
+    }
+
+    // ===================== INIT CALL =====================
     window.onload = () => {
-        initChart();
         initConnection();
     };
 </script>
